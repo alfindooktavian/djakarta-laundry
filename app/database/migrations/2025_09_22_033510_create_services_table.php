@@ -8,8 +8,8 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->decimal('price', 10, 2);
+            $table->string('name',20);
+            $table->float('price');
             $table->enum('type', ['kg', 'item'])->default('kg');
             $table->timestamps();
         });

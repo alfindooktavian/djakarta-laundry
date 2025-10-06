@@ -11,10 +11,11 @@ return new class extends Migration
         // tabel users
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
+            $table->string('name',40);
+            $table->string('email',50)->unique();
+            $table->string('password',100);
             $table->enum('role', ['superadmin', 'owner', 'karyawan'])->default('owner');
+            $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });
 

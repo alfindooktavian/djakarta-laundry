@@ -12,10 +12,11 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'role' => 'required|in:superadmin,admin,finance',
+            'name' => 'required|string|max:40',
+            'email' => 'required|email|unique:users,email|max:50',
+            'password' => 'required|string|min:6|max:100',
+            'role' => 'required|in:superadmin,owner,karyawan',
+            'status' => 'sometimes|in:aktif,nonaktif',
         ]);
 
         $user = User::create([
@@ -23,6 +24,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'role' => $request->role,
+            'status' => $request->status ?? 'aktif',
         ]);
 
         return response()->json([
@@ -35,8 +37,8 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
+            'email' => 'required|email|max:50',
+            'password' => 'required|string|max:100',
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -45,7 +47,6 @@ class UserController extends Controller
             return response()->json(['message' => 'Email atau password salah'], 401);
         }
 
-        // buat token baru
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
@@ -55,7 +56,7 @@ class UserController extends Controller
         ]);
     }
 
-    // Logout user (hapus token)
+    // Logout user
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -63,7 +64,7 @@ class UserController extends Controller
         return response()->json(['message' => 'Logout berhasil']);
     }
 
-    // List semua user (hanya superadmin)
+    // List semua user
     public function index()
     {
         $users = User::all();
@@ -83,17 +84,18 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
-            'password' => 'sometimes|string|min:6',
-            'role' => 'sometimes|in:superadmin,admin,finance',
+            'name' => 'sometimes|string|max:40',
+            'email' => 'sometimes|email|unique:users,email,' . $id . '|max:50',
+            'password' => 'sometimes|string|min:6|max:100',
+            'role' => 'sometimes|in:superadmin,owner,karyawan',
+            'status' => 'sometimes|in:aktif,nonaktif',
         ]);
 
         if ($request->has('password')) {
             $request->merge(['password' => bcrypt($request->password)]);
         }
 
-        $user->update($request->only(['name', 'email', 'password', 'role']));
+        $user->update($request->only(['name', 'email', 'password', 'role', 'status']));
 
         return response()->json([
             'message' => 'User berhasil diupdate',

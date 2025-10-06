@@ -7,33 +7,28 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    // List semua customer
     public function index()
     {
         $customers = Customer::all();
         return response()->json($customers);
     }
 
-    // Lihat detail customer
     public function show($id)
     {
         $customer = Customer::findOrFail($id);
         return response()->json($customer);
     }
 
-    // Tambah customer baru
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:customers,email',
-            'phone' => 'nullable|string|max:20',
+            'name' => 'required|string|max:40',
+            'phone' => 'nullable|string|max:15',
             'address' => 'nullable|string|max:255',
         ]);
 
         $customer = Customer::create([
             'name' => $request->name,
-            'email' => $request->email,
             'phone' => $request->phone,
             'address' => $request->address,
         ]);
@@ -44,19 +39,17 @@ class CustomerController extends Controller
         ], 201);
     }
 
-    // Update customer
     public function update(Request $request, $id)
     {
         $customer = Customer::findOrFail($id);
 
         $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'nullable|email|unique:customers,email,' . $id,
-            'phone' => 'nullable|string|max:20',
+            'name' => 'sometimes|string|max:40',
+            'phone' => 'nullable|string|max:15',
             'address' => 'nullable|string|max:255',
         ]);
 
-        $customer->update($request->only(['name','email','phone','address']));
+        $customer->update($request->only(['name', 'phone', 'address']));
 
         return response()->json([
             'message' => 'Customer berhasil diupdate',
@@ -64,7 +57,6 @@ class CustomerController extends Controller
         ]);
     }
 
-    // Hapus customer
     public function destroy($id)
     {
         $customer = Customer::findOrFail($id);

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->enum('method', ['cash', 'transfer', 'ewallet'])->default('cash');
             $table->enum('status', ['paid', 'unpaid'])->default('unpaid');
-            $table->datetime('payment_date')->useCurrent();
+            $table->datetime('paid_at')->useCurrent();
             $table->timestamps();
         });
     }

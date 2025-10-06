@@ -27,14 +27,14 @@ class OrderDetailController extends Controller
         $validated = $request->validate([
             'order_id'   => 'required|exists:orders,id',
             'service_id' => 'required|exists:services,id',
-            'quantity'   => 'required|integer|min:1',
+            'quantity'   => 'sometimes|integer|min:1', // default sudah 1 di migration
             'subtotal'   => 'required|numeric|min:0',
         ]);
 
         $orderDetail = OrderDetail::create($validated);
 
         return response()->json([
-            'message' => 'Order detail created successfully',
+            'message' => 'Order detail berhasil dibuat',
             'data'    => $orderDetail
         ], 201);
     }
@@ -53,7 +53,7 @@ class OrderDetailController extends Controller
         $orderDetail->update($validated);
 
         return response()->json([
-            'message' => 'Order detail updated successfully',
+            'message' => 'Order detail berhasil diupdate',
             'data'    => $orderDetail
         ]);
     }
@@ -65,7 +65,7 @@ class OrderDetailController extends Controller
         $orderDetail->delete();
 
         return response()->json([
-            'message' => 'Order detail deleted successfully'
+            'message' => 'Order detail berhasil dihapus'
         ]);
     }
 }

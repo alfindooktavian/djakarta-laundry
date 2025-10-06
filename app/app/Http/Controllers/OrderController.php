@@ -27,15 +27,15 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'user_id'     => 'required|exists:users,id',
-            'order_date'  => 'required|date',
-            'status'      => 'in:diterima,diproses,selesai,diambil',
-            'total_price' => 'numeric|min:0',
+            'order_at'    => 'required|date',
+            'status'      => 'sometimes|in:diterima,diproses,selesai,diambil',
+            'total_price' => 'sometimes|numeric|min:0',
         ]);
 
         $order = Order::create($validated);
 
         return response()->json([
-            'message' => 'Order created successfully',
+            'message' => 'Order berhasil dibuat',
             'data'    => $order
         ], 201);
     }
@@ -46,7 +46,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'sometimes|required|exists:customers,id',
             'user_id'     => 'sometimes|required|exists:users,id',
-            'order_date'  => 'sometimes|required|date',
+            'order_at'    => 'sometimes|required|date',
             'status'      => 'sometimes|required|in:diterima,diproses,selesai,diambil',
             'total_price' => 'sometimes|required|numeric|min:0',
         ]);
@@ -55,7 +55,7 @@ class OrderController extends Controller
         $order->update($validated);
 
         return response()->json([
-            'message' => 'Order updated successfully',
+            'message' => 'Order berhasil diupdate',
             'data'    => $order
         ]);
     }
@@ -67,7 +67,7 @@ class OrderController extends Controller
         $order->delete();
 
         return response()->json([
-            'message' => 'Order deleted successfully'
+            'message' => 'Order berhasil dihapus'
         ]);
     }
 }

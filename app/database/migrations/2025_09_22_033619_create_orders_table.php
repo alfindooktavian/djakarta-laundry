@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->datetime('order_date');
+            $table->date('order_at');
             $table->enum('status', ['diterima', 'diproses', 'selesai', 'diambil'])->default('diterima');
-            $table->decimal('total_price', 10, 2)->default(0);
+            $table->float('total_price')->default(0);
             $table->timestamps();
         });
     }

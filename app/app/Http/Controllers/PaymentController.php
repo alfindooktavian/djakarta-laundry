@@ -25,17 +25,17 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'order_id'     => 'required|exists:orders,id',
-            'amount'       => 'required|numeric|min:0',
-            'method'       => 'required|in:cash,transfer,ewallet',
-            'status'       => 'required|in:paid,unpaid',
-            'payment_date' => 'date',
+            'order_id' => 'required|exists:orders,id',
+            'amount'   => 'required|numeric|min:0',
+            'method'   => 'sometimes|in:cash,transfer,ewallet', // default cash
+            'status'   => 'sometimes|in:paid,unpaid',           // default unpaid
+            'paid_at'  => 'sometimes|date',
         ]);
 
         $payment = Payment::create($validated);
 
         return response()->json([
-            'message' => 'Payment created successfully',
+            'message' => 'Pembayaran berhasil dibuat',
             'data'    => $payment
         ], 201);
     }
@@ -44,18 +44,18 @@ class PaymentController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'order_id'     => 'sometimes|required|exists:orders,id',
-            'amount'       => 'sometimes|required|numeric|min:0',
-            'method'       => 'sometimes|required|in:cash,transfer,ewallet',
-            'status'       => 'sometimes|required|in:paid,unpaid',
-            'payment_date' => 'sometimes|date',
+            'order_id' => 'sometimes|required|exists:orders,id',
+            'amount'   => 'sometimes|required|numeric|min:0',
+            'method'   => 'sometimes|in:cash,transfer,ewallet',
+            'status'   => 'sometimes|in:paid,unpaid',
+            'paid_at'  => 'sometimes|date',
         ]);
 
         $payment = Payment::findOrFail($id);
         $payment->update($validated);
 
         return response()->json([
-            'message' => 'Payment updated successfully',
+            'message' => 'Pembayaran berhasil diupdate',
             'data'    => $payment
         ]);
     }
@@ -67,7 +67,8 @@ class PaymentController extends Controller
         $payment->delete();
 
         return response()->json([
-            'message' => 'Payment deleted successfully'
+            'message' => 'Pembayaran berhasil dihapus'
         ]);
     }
 }
+

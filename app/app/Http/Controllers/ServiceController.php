@@ -25,14 +25,14 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'  => 'required|string|max:255',
+            'name'  => 'required|string|max:20', // disesuaikan dengan migration
             'price' => 'required|numeric|min:0',
             'type'  => 'required|in:kg,item',
         ]);
 
         $service = Service::create($validated);
         return response()->json([
-            'message' => 'Service created successfully',
+            'message' => 'Service berhasil dibuat',
             'data' => $service
         ], 201);
     }
@@ -41,7 +41,7 @@ class ServiceController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'name'  => 'sometimes|required|string|max:255',
+            'name'  => 'sometimes|required|string|max:20',
             'price' => 'sometimes|required|numeric|min:0',
             'type'  => 'sometimes|required|in:kg,item',
         ]);
@@ -50,7 +50,7 @@ class ServiceController extends Controller
         $service->update($validated);
 
         return response()->json([
-            'message' => 'Service updated successfully',
+            'message' => 'Service berhasil diupdate',
             'data' => $service
         ]);
     }
@@ -62,7 +62,7 @@ class ServiceController extends Controller
         $service->delete();
 
         return response()->json([
-            'message' => 'Service deleted successfully'
+            'message' => 'Service berhasil dihapus'
         ]);
     }
 }
