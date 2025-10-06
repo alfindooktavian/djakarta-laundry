@@ -1,18 +1,9 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-</head>
-<body>
+@extends('layouts.app')
 
-    <h2>Dashboard</h2>
+@section('title', 'Dashboard')
 
-    <div id="userInfo"></div>
-
-    <br>
-    <button id="logoutBtn">Logout</button>
+@section('content')
+    <div id="userInfo" class="mb-6 text-gray-800"></div>
 
     <script>
         // Ambil data user dari localStorage
@@ -20,7 +11,6 @@
         const token = localStorage.getItem("api_token");
 
         if (!user || !token) {
-            // kalau belum login, redirect ke login
             window.location.href = "/login";
         } else {
             document.getElementById("userInfo").innerHTML = `
@@ -34,9 +24,7 @@
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("api_token");
             localStorage.removeItem("user");
-            window.location.href = "/";
+            window.location.href = "/login";
         });
     </script>
-
-</body>
-</html>
+@endsection
