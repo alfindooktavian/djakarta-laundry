@@ -4,22 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
 
-    <h2>Login</h2>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen px-4">
 
-    <div id="error" style="color: red;"></div>
+    <div class="flex flex-col items-center w-full max-w-[400px] gap-2">
+        <!-- Title -->
+        <h1 class="w-full sm:w-[209px] h-[36px] text-[24px] leading-[150%] font-[600] text-center tracking-[-0.01em]" style="font-family: 'Inter', sans-serif;">
+            Create an account
+        </h1>
 
-    <form id="loginForm">
-        <label>Email:</label><br>
-        <input type="email" name="email" required><br><br>
+        <!-- Subtitle -->
+        <p class="text-[16px] font-normal text-center w-full sm:w-[321px]" style="font-family: 'Inter', sans-serif;">
+            Enter your username to sign in for this app
+        </p>
 
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
+        <!-- Error Message -->
+        <div id="error" class="text-red-500 text-center mb-2"></div>
 
-        <button type="submit">Login</button>
-    </form>
+        <!-- Form -->
+        <form id="loginForm" class="flex flex-col gap-4 w-full">
+            <!-- Email Field -->
+            <div class="flex items-center w-full h-[40px] bg-transparent border border-gray-300 rounded-[8px] px-4">
+                <input type="email" name="email" placeholder="Email"
+                       class="flex-grow h-full text-[20px] font-[500] placeholder-[#828282] bg-transparent outline-none"
+                       style="font-family: 'Inter', sans-serif;" required>
+            </div>
+
+            <!-- Password Field -->
+            <div class="flex items-center w-full h-[40px] bg-transparent border border-gray-300 rounded-[8px] px-4">
+                <input type="password" name="password" placeholder="Password"
+                       class="flex-grow h-full text-[20px] font-[500] placeholder-[#828282] bg-transparent outline-none"
+                       style="font-family: 'Inter', sans-serif;" required>
+            </div>
+
+            <!-- Sign In Button -->
+            <button type="submit"
+                    class="w-full h-[40px] bg-black rounded-[8px] flex items-center justify-center text-white text-[16px] font-medium">
+                Sign In
+            </button>
+        </form>
+
+        
+    </div>
 
     <script>
         const form = document.getElementById('loginForm');
@@ -44,6 +73,5 @@
             }
         });
     </script>
-
 </body>
 </html>
