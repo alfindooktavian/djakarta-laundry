@@ -1,24 +1,38 @@
-<div id="sidebar" class="flex-shrink-0 min-h-screen bg-white shadow-md flex flex-col transition-all duration-300 sidebar-collapsed w-16">
+<div id="sidebar" class="flex-shrink-0 min-h-screen bg-white z-50 shadow-md flex flex-col transition-all duration-300 sidebar-collapsed w-16">
     <!-- Logo / Brand -->
-    <div class="text-2xl font-bold mb-6 flex items-center justify-center md:justify-start px-2 md:px-4">
-        <span class="sidebar-logo">🏠</span>
-        <span class="sidebar-text hidden ml-2">MyApp</span>
-    </div>
+    <div class="text-2xl font-bold mt-6 mb-6 flex items-center justify-center md:justify-start px-2 md:px-4">
+    <span id="sidebarLogo"></span>
+</div>
+
 
     <!-- Navigation -->
-    <nav class="flex flex-col gap-4 px-5 mt-4">
-        <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium">
-            <span>🏠</span> <span class="sidebar-text hidden">Dashboard</span>
-        </a>
-        <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium">
-            <span>👤</span> <span class="sidebar-text hidden">Profile</span>
-        </a>
-        <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium">
-            <span>⚙️</span> <span class="sidebar-text hidden">Settings</span>
-        </a>
-        <a href="#" id="logoutBtn" class="flex items-center gap-3 text-red-500 hover:text-red-600 font-medium">
-    <span>🚪</span> <span class="sidebar-text hidden">Logout</span>
+    <nav class="flex flex-col  px-0 mt-4">
+    <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+        <iconify-icon icon="mdi:home-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+        <span class="sidebar-text hidden leading-none">Dashboard</span>
+    </a>
+    <a href="{{ route('administrator') }}" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+    <iconify-icon icon="mdi:account-circle-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+    <span class="sidebar-text hidden leading-none">Administrator</span>
 </a>
+
+    <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+        <iconify-icon icon="mdi:cog-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+        <span class="sidebar-text hidden leading-none">Layanan</span>
+    </a>
+    <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+        <iconify-icon icon="mdi:account-group-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+        <span class="sidebar-text hidden leading-none">Pelanggan</span>
+    </a>
+    <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+        <iconify-icon icon="mdi:cart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+        <span class="sidebar-text hidden leading-none">Transaksi</span>
+    </a>
+    <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+        <iconify-icon icon="mdi:file-chart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+        <span class="sidebar-text hidden leading-none">Laporan</span>
+    </a>
+        
 
 <script>
     document.getElementById('logoutBtn').addEventListener('click', async (e) => {
