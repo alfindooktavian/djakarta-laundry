@@ -26,3 +26,7 @@ Route::get('/administrator', function () {
 Route::get('/customer', function () {
     return view('customer.customer'); 
 })->name('customer');
+
+Route::get('/chat', function () {
+    return view('chat.chat'); 
+})->name('chat');

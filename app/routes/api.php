@@ -2,11 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderDetailController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\OrderDetailController;
 
 // Public routes
 Route::post('/register', [UserController::class, 'store']);
@@ -58,3 +59,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/payments/{id}', [PaymentController::class, 'update']);
     Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
 });
+
+// Whatsapp Service
+Route::post('/send-wa', [WhatsAppController::class, 'send']);
+Route::post('/wa-qr', [WhatsAppController::class, 'receiveQR']);
+Route::get('/wa-qr', [WhatsAppController::class, 'getQR']);
+Route::get('/wa-status', [WhatsAppController::class, 'status']);
