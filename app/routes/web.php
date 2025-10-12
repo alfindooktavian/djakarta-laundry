@@ -18,6 +18,10 @@ Route::get('/user', function () {
     return view('user.user'); 
 })->name('user');
 
+Route::get('/service', function () {
+    return view('service.service'); 
+})->name('service');
+
 Route::get('/administrator', function () {
     return view('administrator.administrator'); 
 })->name('administrator');

@@ -17,13 +17,13 @@ Route::post('/login', [UserController::class, 'login']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
 
-    // Hanya superadmin yang bisa akses user management
-    Route::middleware(['role:superadmin'])->group(function () {
+    
         Route::get('/users', [UserController::class, 'index']);
         Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::post('/users', [UserController::class, 'store']);
         Route::patch('/users/{id}', [UserController::class, 'update']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
-    });
+    
 
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::get('/customers/{id}', [CustomerController::class, 'show']);
