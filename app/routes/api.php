@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CustomerController;
@@ -58,6 +59,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/payments', [PaymentController::class, 'store']);
     Route::patch('/payments/{id}', [PaymentController::class, 'update']);
     Route::delete('/payments/{id}', [PaymentController::class, 'destroy']);
+
+    // Reports
+    Route::get('/reports', [ReportController::class, 'index']); 
+    Route::get('/reports/excel', [ReportController::class, 'exportExcel']); 
+    Route::get('/reports/pdf', [ReportController::class, 'exportPDF']);    
 });
 
 // Whatsapp Service

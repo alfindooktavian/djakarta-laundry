@@ -36,7 +36,7 @@
             <span class="sidebar-text hidden leading-none">Chat</span>
         </a>
 
-        <a href="#" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+        <a href="{{ route('report') }}" class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
             <iconify-icon icon="mdi:file-chart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
             <span class="sidebar-text hidden leading-none">Laporan</span>
         </a>

@@ -26,7 +26,6 @@ Route::get('/administrator', function () {
     return view('administrator.administrator'); 
 })->name('administrator');
 
-
 Route::get('/customer', function () {
     return view('customer.customer'); 
 })->name('customer');
@@ -34,3 +33,7 @@ Route::get('/customer', function () {
 Route::get('/chat', function () {
     return view('chat.chat'); 
 })->name('chat');
+
+Route::get('/report', function () {
+    return view('report.report'); 
+})->name('report');
