@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  
+    @vite('resources/js/api/auth.js')
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen px-4">
@@ -28,14 +32,14 @@
         <form id="loginForm" class="flex flex-col gap-4 w-full">
             <!-- Email Field -->
             <div class="flex items-center w-full h-[40px] bg-transparent border border-gray-300 rounded-[8px] px-4">
-                <input type="email" name="email" placeholder="Email"
+                <input type="email" id="email" name="email" placeholder="Email"
                        class="flex-grow h-full text-[20px] font-[500] placeholder-[#828282] bg-transparent outline-none"
                        style="font-family: 'Inter', sans-serif;" required>
             </div>
 
             <!-- Password Field -->
             <div class="flex items-center w-full h-[40px] bg-transparent border border-gray-300 rounded-[8px] px-4">
-                <input type="password" name="password" placeholder="Password"
+                <input type="password" id="password" name="password" placeholder="Password"
                        class="flex-grow h-full text-[20px] font-[500] placeholder-[#828282] bg-transparent outline-none"
                        style="font-family: 'Inter', sans-serif;" required>
             </div>
@@ -46,30 +50,26 @@
                 Sign In
             </button>
         </form>
-
-        
     </div>
 
-    <script>
+    <script type="module">
         const form = document.getElementById('loginForm');
+        const errorElement = document.getElementById('error');
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const formData = new FormData(form);
-            const response = await fetch("/api/login", {
-                method: "POST",
-                body: formData
-            });
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-            const data = await response.json();
+            // Panggil fungsi dari auth.js
+            const result = await window.loginUser(email, password);
 
-            if (response.ok) {
-                localStorage.setItem("api_token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.user));
-
-                window.location.href = "/dashboard";
+            if (result.error) {
+                errorElement.innerText = result.error;
             } else {
-                document.getElementById("error").innerText = data.message;
+                // Redirect ke dashboard
+                window.location.href = "/dashboard";
             }
         });
     </script>
