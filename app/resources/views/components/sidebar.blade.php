@@ -33,7 +33,7 @@
             <span class="sidebar-text hidden leading-none">Pelanggan</span>
         </a>
 
-        <a href="{{ route('orders') }}"
+        <a href="{{ route('order') }}"
             class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
             <iconify-icon icon="mdi:cart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
             <span class="sidebar-text hidden leading-none">Transaksi</span>
