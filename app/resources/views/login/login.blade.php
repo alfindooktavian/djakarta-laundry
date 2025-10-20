@@ -5,53 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  
+    @vite('resources/css/app.css')
     @vite('resources/js/api/auth.js')
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen px-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen px-4 font-[Inter]">
 
-    <div class="flex flex-col items-center w-full max-w-[400px] gap-2">
-        <!-- Title -->
-        <h1 class="w-full sm:w-[209px] h-[36px] text-[24px] leading-[150%] font-[600] text-center tracking-[-0.01em]" style="font-family: 'Inter', sans-serif;">
-            Create an account
-        </h1>
-
-        <!-- Subtitle -->
-        <p class="text-[16px] font-normal text-center w-full sm:w-[321px]" style="font-family: 'Inter', sans-serif;">
-            Enter your username to sign in for this app
-        </p>
+    <div class="bg-white shadow-md rounded-2xl p-8 w-full max-w-sm space-y-6">
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-2xl font-semibold text-gray-800">Login</h1>
+            <p class="text-gray-500 text-sm mt-1">Masuk untuk mengakses dashboard</p>
+        </div>
 
         <!-- Error Message -->
-        <div id="error" class="text-red-500 text-center mb-2"></div>
+        <div id="error" class="hidden text-red-500 text-center bg-red-50 border border-red-200 rounded-md py-2 px-3 text-sm"></div>
 
         <!-- Form -->
-        <form id="loginForm" class="flex flex-col gap-4 w-full">
+        <form id="loginForm" class="flex flex-col gap-4">
             <!-- Email Field -->
-            <div class="flex items-center w-full h-[40px] bg-transparent border border-gray-300 rounded-[8px] px-4">
-                <input type="email" id="email" name="email" placeholder="Email"
-                       class="flex-grow h-full text-[20px] font-[500] placeholder-[#828282] bg-transparent outline-none"
-                       style="font-family: 'Inter', sans-serif;" required>
+            <div>
+                <label for="email" class="block text-gray-700 text-sm font-medium mb-1">Email</label>
+                <input type="email" id="email" name="email" placeholder="Masukkan email"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none text-sm"
+                       required>
             </div>
 
             <!-- Password Field -->
-            <div class="flex items-center w-full h-[40px] bg-transparent border border-gray-300 rounded-[8px] px-4">
-                <input type="password" id="password" name="password" placeholder="Password"
-                       class="flex-grow h-full text-[20px] font-[500] placeholder-[#828282] bg-transparent outline-none"
-                       style="font-family: 'Inter', sans-serif;" required>
+            <div>
+                <label for="password" class="block text-gray-700 text-sm font-medium mb-1">Password</label>
+                <input type="password" id="password" name="password" placeholder="Masukkan password"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none text-sm"
+                       required>
             </div>
 
             <!-- Sign In Button -->
             <button type="submit"
-                    class="w-full h-[40px] bg-black rounded-[8px] flex items-center justify-center text-white text-[16px] font-medium">
-                Sign In
+                    class="w-full bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-800 transition">
+                Masuk
             </button>
         </form>
     </div>
 
+    <!-- Script -->
     <script type="module">
         const form = document.getElementById('loginForm');
         const errorElement = document.getElementById('error');
@@ -67,8 +64,9 @@
 
             if (result.error) {
                 errorElement.innerText = result.error;
+                errorElement.classList.remove('hidden');
             } else {
-                // Redirect ke dashboard
+                errorElement.classList.add('hidden');
                 window.location.href = "/dashboard";
             }
         });
