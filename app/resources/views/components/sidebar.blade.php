@@ -9,66 +9,72 @@
         </div>
 
         <nav class="flex flex-col px-0 mt-4">
-        <a href="{{ route('dashboard') }}"
-            class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-            <iconify-icon icon="mdi:home-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
-            <span class="sidebar-text hidden leading-none">Dashboard</span>
-        </a>
+            <a href="{{ route('dashboard') }}"
+                class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+                <iconify-icon icon="mdi:home-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+                <span class="sidebar-text hidden leading-none">Dashboard</span>
+            </a>
 
-        <a href="{{ route('administrator') }}"
-            class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-            <iconify-icon icon="mdi:account-circle-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
-            <span class="sidebar-text hidden leading-none">Administrator</span>
-        </a>
+            <a href="{{ route('administrator') }}"
+                class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+                <iconify-icon icon="mdi:account-circle-outline" width="24" height="24"
+                    class="flex-shrink-0"></iconify-icon>
+                <span class="sidebar-text hidden leading-none">Administrator</span>
+            </a>
 
-        <a href="{{ route('service') }}"
-            class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-            <iconify-icon icon="mdi:cog-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
-            <span class="sidebar-text hidden leading-none">Layanan</span>
-        </a>
+            <a href="{{ route('service') }}"
+                class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+                <iconify-icon icon="mdi:cog-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+                <span class="sidebar-text hidden leading-none">Layanan</span>
+            </a>
 
-        <a href="{{ route('customer') }}"
-            class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-            <iconify-icon icon="mdi:account-group-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
-            <span class="sidebar-text hidden leading-none">Pelanggan</span>
-        </a>
+            <a href="{{ route('customer') }}"
+                class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+                <iconify-icon icon="mdi:account-group-outline" width="24" height="24"
+                    class="flex-shrink-0"></iconify-icon>
+                <span class="sidebar-text hidden leading-none">Pelanggan</span>
+            </a>
 
-        <a href="{{ route('order') }}"
-            class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-            <iconify-icon icon="mdi:cart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
-            <span class="sidebar-text hidden leading-none">Transaksi</span>
-        </a>
+            <a href="{{ route('order') }}"
+                class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+                <iconify-icon icon="mdi:cart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+                <span class="sidebar-text hidden leading-none">Transaksi</span>
+            </a>
 
-        <a href="{{ route('chat') }}"
-            class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-            <iconify-icon icon="mdi:message-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
-            <span class="sidebar-text hidden leading-none">Chat</span>
-        </a>
+            <a href="{{ route('chat') }}"
+                class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+                <iconify-icon icon="mdi:message-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+                <span class="sidebar-text hidden leading-none">Chat</span>
+            </a>
 
-        <a href="{{ route('report') }}"
-            class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-            <iconify-icon icon="mdi:file-chart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
-            <span class="sidebar-text hidden leading-none">Laporan</span>
-        </a>
-    </nav>
+            <a href="{{ route('report') }}"
+                class="flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
+                <iconify-icon icon="mdi:file-chart-outline" width="24" height="24" class="flex-shrink-0"></iconify-icon>
+                <span class="sidebar-text hidden leading-none">Laporan</span>
+            </a>
+        </nav>
     </div>
     <!-- Bagian bawah Logout -->
-    <div id="sidebarFooter"
-        class="flex items-center justify-between bg-black text-white rounded-lg px-4 py-2 h-16 transition-all duration-300">
+    <div class="p-1">
+        <div id="sidebarFooter"
+            class="flex items-center justify-between bg-black text-white rounded-lg px-4 py-2 h-16 transition-all duration-300">
 
-        <!-- Profil user -->
-        <div id="userProfile" class="flex items-center gap-3 transition-all duration-300">
-            <iconify-icon icon="mdi:account-circle-outline" width="30" height="42" class="text-white"></iconify-icon>
-            <div class="leading-tight sidebar-text">
-                <span id="userName" class="block text-base font-medium leading-none">User Name</span>
-                <span id="userRole" class="block text-sm text-gray-400 leading-none">Role</span>
+            <!-- Profil user -->
+            <div id="userProfile" class="flex items-center gap-3 transition-all duration-300">
+                <iconify-icon icon="mdi:account-circle-outline" width="30" height="42"
+                    class="text-white"></iconify-icon>
+                <div class="leading-tight sidebar-text">
+                    <span id="userName" class="block text-base font-medium leading-none">User Name</span>
+                    <span id="userRole" class="block text-sm text-gray-400 leading-none">Role</span>
+                </div>
             </div>
-        </div>
 
-        <!-- Tombol logout -->
-        <a href="#" id="logoutBtn" class="flex items-center justify-center text-white hover:text-gray-300 transition">
-            <iconify-icon icon="mdi:logout" width="22" height="22" class="transform rotate-180"></iconify-icon>
-        </a>
+            <!-- Tombol logout -->
+            <a href="#" id="logoutBtn"
+                class="flex items-center justify-center text-white hover:text-gray-300 transition">
+                <iconify-icon icon="mdi:logout" width="22" height="22" class="transform rotate-180"></iconify-icon>
+            </a>
+        </div>
     </div>
 
 </div>
