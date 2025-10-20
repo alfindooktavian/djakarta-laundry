@@ -37,3 +37,7 @@ Route::get('/chat', function () {
 Route::get('/report', function () {
     return view('report.report'); 
 })->name('report');
+
+Route::get('/order', function () {
+    return view('order.order'); 
+})->name('order');

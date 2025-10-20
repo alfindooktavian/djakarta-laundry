@@ -9,6 +9,7 @@
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body class="bg-white flex min-h-screen overflow-x-hidden font-inter">
 
     <!-- Sidebar -->
@@ -25,82 +26,106 @@
         </div>
     </div>
 
-    <!-- Toggle Script -->
-    <script>
-const sidebar = document.getElementById('sidebar');
-const toggleBtn = document.getElementById('sidebarToggle');
-const sidebarLogo = document.getElementById('sidebarLogo');
+    <!-- Sidebar Script -->
+    <script type="module">
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebarLogo = document.getElementById('sidebarLogo');
+        const userProfile = document.getElementById('userProfile');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const sidebarFooter = document.getElementById('sidebarFooter');
 
-// Tambahkan class transisi ke sidebar & text
-sidebar.classList.add("transition-all", "duration-1000", "ease-in-out");
+        // ✅ Cek kondisi awal dari localStorage
+        let sidebarState = localStorage.getItem('sidebarState') || 'expanded';
+        if (sidebarState === 'collapsed') {
+            sidebar.classList.add('sidebar-collapsed', 'w-16');
+        } else {
+            sidebar.classList.add('sidebar-expanded', 'w-64');
+        }
 
-// Fungsi update logo dengan animasi
-function updateLogo(isCollapsed) {
-    sidebarLogo.style.transition = 'opacity 0.3s, transform 0.3s';
-    sidebarLogo.style.opacity = 0;
-    sidebarLogo.style.transform = 'translateX(-10px)';
+        // ✅ Sinkronisasi elemen sidebar saat awal halaman dimuat
+        if (sidebarState === 'collapsed') {
+            document.querySelectorAll('.sidebar-text').forEach(el => el.classList.add('hidden'));
+            userProfile?.classList.add('hidden');
+            logoutBtn?.classList.add('mx-auto');
+            sidebarFooter?.classList.remove('justify-between');
+            sidebarFooter?.classList.add('justify-start');
+        } else {
+            document.querySelectorAll('.sidebar-text').forEach(el => el.classList.remove('hidden'));
+            userProfile?.classList.remove('hidden');
+            logoutBtn?.classList.remove('mx-auto');
+            sidebarFooter?.classList.add('justify-between');
+            sidebarFooter?.classList.remove('justify-start');
+        }
 
-    setTimeout(() => {
-        sidebarLogo.textContent = isCollapsed ? 'DL' : 'Djakarta Laundry';
-        sidebarLogo.style.opacity = 1;
-        sidebarLogo.style.transform = 'translateX(0)';
-    }, 150); // delay supaya fade-out dulu
-}
+        // Tambahkan animasi transisi
+        sidebar.classList.add("transition-all", "duration-1000", "ease-in-out");
 
-// Inisialisasi logo saat halaman load
-updateLogo(sidebar.classList.contains('sidebar-collapsed'));
-
-toggleBtn.addEventListener('click', () => {
-    const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
-
-    if (isCollapsed) {
-        // Expand
-        sidebar.classList.remove('sidebar-collapsed', 'w-16');
-        sidebar.classList.add('sidebar-expanded', 'w-64');
-
-        document.querySelectorAll('.sidebar-text').forEach(el => {
-            el.classList.remove('hidden');
-            el.classList.add('opacity-0', '-translate-x-2', 'transition-all', 'duration-300');
+        // ✅ Fungsi update logo
+        function updateLogo(isCollapsed) {
+            sidebarLogo.style.transition = 'opacity 0.3s, transform 0.3s';
+            sidebarLogo.style.opacity = 0;
+            sidebarLogo.style.transform = 'translateX(-10px)';
             setTimeout(() => {
-                el.classList.remove('opacity-0', '-translate-x-2');
-                el.classList.add('opacity-100', 'translate-x-0');
-            }, 10);
+                sidebarLogo.textContent = isCollapsed ? 'DL' : 'Djakarta Laundry';
+                sidebarLogo.style.opacity = 1;
+                sidebarLogo.style.transform = 'translateX(0)';
+            }, 150);
+        }
+        updateLogo(sidebarState === 'collapsed');
+
+        // ✅ Event: Toggle Sidebar
+        toggleBtn.addEventListener('click', () => {
+            const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+
+            if (isCollapsed) {
+                // Expand
+                sidebar.classList.remove('sidebar-collapsed', 'w-16');
+                sidebar.classList.add('sidebar-expanded', 'w-64');
+
+                document.querySelectorAll('.sidebar-text').forEach(el => el.classList.remove('hidden'));
+                userProfile?.classList.remove('hidden');
+
+                logoutBtn?.classList.remove('mx-auto');
+                sidebarFooter?.classList.add('justify-between');
+                sidebarFooter?.classList.remove('justify-start');
+
+                localStorage.setItem('sidebarState', 'expanded');
+            } else {
+                // Collapse
+                sidebar.classList.remove('sidebar-expanded', 'w-64');
+                sidebar.classList.add('sidebar-collapsed', 'w-16');
+
+                document.querySelectorAll('.sidebar-text').forEach(el => el.classList.add('hidden'));
+                userProfile?.classList.add('hidden');
+
+                logoutBtn?.classList.add('mx-auto');
+                sidebarFooter?.classList.remove('justify-between');
+                sidebarFooter?.classList.add('justify-start');
+
+                localStorage.setItem('sidebarState', 'collapsed');
+            }
+
+            updateLogo(!isCollapsed);
         });
 
-    } else {
-        // Collapse
-        sidebar.classList.remove('sidebar-expanded', 'w-64');
-        sidebar.classList.add('sidebar-collapsed', 'w-16');
+        // ✅ Fungsi Modal
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
 
-        document.querySelectorAll('.sidebar-text').forEach(el => {
-            el.classList.remove('opacity-100', 'translate-x-0');
-            el.classList.add('opacity-0', '-translate-x-2');
-            setTimeout(() => {
-                el.classList.add('hidden');
-            }, 250); // delay biar fade-out dulu baru hilang
-        });
-    }
-
-    // Update logo dengan animasi
-    updateLogo(!isCollapsed);
-});
-
-function openModal(id) {
-    const modal = document.getElementById(id);
-    if(modal){
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-}
-
-function closeModal(id) {
-    const modal = document.getElementById(id);
-    if(modal){
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-}
-</script>
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+    </script>
 
 </body>
 </html>
