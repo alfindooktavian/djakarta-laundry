@@ -68,6 +68,7 @@
 </div>
 
 <!-- Modal Detail / Edit User -->
+<!-- Modal Detail / Edit User -->
 <div id="detailUserModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
         <button onclick="closeModal('detailUserModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
@@ -95,12 +96,17 @@
         </div>
 
         <div class="flex flex-col gap-1 mb-4">
-    <label class="text-gray-700">Status</label>
-    <select id="detailStatus" name="status" class="border rounded px-3 py-2 w-full">
-        <option value="aktif">Aktif</option>
-        <option value="nonaktif">Nonaktif</option>
-    </select>
-</div>
+            <label class="text-gray-700">Status</label>
+            <select id="detailStatus" name="status" class="border rounded px-3 py-2 w-full">
+                <option value="aktif">Aktif</option>
+                <option value="nonaktif">Nonaktif</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col gap-1 mb-4">
+            <label class="text-gray-700">Password Baru (kosongkan jika tidak diubah)</label>
+            <input id="detailPassword" type="password" name="password" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Password Baru" />
+        </div>
 
         <div class="flex justify-end gap-2">
             <button onclick="closeModal('detailUserModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Tutup</button>
@@ -108,6 +114,7 @@
         </div>
     </div>
 </div>
+
 
 @vite('resources/js/api/users.js')
 
@@ -208,8 +215,13 @@ async function handleUpdateUser() {
         name: document.getElementById('detailName').value,
         email: document.getElementById('detailEmail').value,
         role: document.getElementById('detailRole').value,
-        status: document.getElementById('detailStatus').value
+        status: document.getElementById('detailStatus').value,
     };
+
+    const newPassword = document.getElementById('detailPassword').value;
+    if(newPassword) {
+        data.password = newPassword; // hanya kirim jika ada password baru
+    }
 
     const res = await updateUser(currentEditUserId, data);
     console.log('Hasil update:', res);

@@ -1,0 +1,379 @@
+@extends('layouts.app')
+
+@section('title', 'Orders')
+
+@section('content')
+<div class="space-y-6">
+    <x-title title="Order" />
+    <x-add-button onclick="openModal('tambahOrderModal')">Tambah</x-add-button>
+
+    <div class="bg-white shadow overflow-x-auto">
+        <table class="min-w-full border-y border-gray-200 rounded-lg">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">No</th>
+                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">Pelanggan</th>
+                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">User</th>
+                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">Tanggal Order</th>
+                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">Status</th>
+                    <th class="px-4 py-4 text-right text-sm font-semibold text-gray-700 border-b">Total Harga</th>
+                    <th class="px-4 py-4 text-center text-sm font-semibold text-gray-700 border-b">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody">
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-gray-500">Memuat data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah Order -->
+<div id="tambahOrderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative overflow-y-auto max-h-[90vh]">
+        <button onclick="closeModal('tambahOrderModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
+        </button>
+        <h2 class="text-xl font-semibold mb-4">Tambah Order</h2>
+
+        <div class="flex flex-col gap-1 mb-4">
+    <button type="button" onclick="showNewCustomerForm()" 
+        class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm mb-2">
+        + Customer Baru
+    </button>
+
+    <div id="newCustomerContainer" class="flex flex-col gap-2 mb-2 hidden">
+        <input id="inputName" type="text" class="border rounded px-3 py-2 w-full" placeholder="Nama Customer" />
+        <input id="inputPhone" type="text" class="border rounded px-3 py-2 w-full" placeholder="No. Telepon" />
+        <input id="inputAddress" type="text" class="border rounded px-3 py-2 w-full" placeholder="Alamat" />
+        <button type="button" onclick="handleCreateCustomerFromOrder()" 
+            class="px-3 py-2 bg-black text-white rounded hover:bg-gray-800 transition text-sm">
+            Simpan Customer
+        </button>
+    </div>
+
+    <label class="text-gray-700">Pilih Customer</label>
+    <select id="inputCustomerId" class="border rounded px-3 py-2 w-full">
+        <option value="">Memuat data...</option>
+    </select>
+</div>
+
+        <div class="flex flex-col gap-1 mb-4">
+            <label class="text-gray-700">Tanggal Order</label>
+            <input id="inputOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
+        </div>
+
+        <div class="flex flex-col gap-1 mb-4">
+            <label class="text-gray-700">Status</label>
+            <select id="inputStatus" class="border rounded px-3 py-2 w-full">
+                <option value="">Pilih Status</option>
+                <option value="diterima">Diterima</option>
+                <option value="diproses">Diproses</option>
+                <option value="selesai">Selesai</option>
+                <option value="diambil">Diambil</option>
+            </select>
+        </div>
+
+        <!-- ==== Detail Order Section ==== -->
+        <div class="border-t pt-4 mt-4">
+            <h3 class="text-lg font-semibold mb-2">Detail Order</h3>
+
+            <div id="orderDetailsContainer" class="flex flex-col gap-3"></div>
+
+            <button type="button" onclick="addOrderDetailRow()" 
+                class="mt-2 px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm">
+                + Tambah Layanan
+            </button>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+            <button onclick="closeModal('tambahOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Batal</button>
+            <button onclick="handleCreateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Order -->
+<div id="detailOrderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
+        <button onclick="closeModal('detailOrderModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
+        </button>
+        <h2 class="text-xl font-semibold mb-4">Edit Order</h2>
+
+        <div class="flex flex-col gap-1 mb-4">
+            <label class="text-gray-700">Pilih Customer</label>
+            <select id="detailCustomerId" class="border rounded px-3 py-2 w-full">
+                <option value="">Memuat data...</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col gap-1 mb-4">
+            <label class="text-gray-700">Tanggal Order</label>
+            <input id="detailOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
+        </div>
+
+        <div class="flex flex-col gap-1 mb-4">
+            <label class="text-gray-700">Status</label>
+            <select id="detailStatus" class="border rounded px-3 py-2 w-full">
+                <option value="diterima">Diterima</option>
+                <option value="diproses">Diproses</option>
+                <option value="selesai">Selesai</option>
+                <option value="diambil">Diambil</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col gap-1 mb-4">
+            <label class="text-gray-700">Total Harga</label>
+            <input id="detailTotalPrice" type="number" class="border rounded px-3 py-2 w-full" readonly />
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="closeModal('detailOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Tutup</button>
+            <button onclick="handleUpdateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
+        </div>
+    </div>
+</div>
+
+@vite([
+    'resources/js/api/orders.js',
+    'resources/js/api/customers.js',
+    'resources/js/api/order-details.js',
+    'resources/js/api/services.js'
+])
+
+<script>
+let currentEditOrderId = null;
+let orderDetailCount = 0;
+
+// ===== Tambah baris order detail =====
+function addOrderDetailRow() {
+    orderDetailCount++;
+    const container = document.getElementById('orderDetailsContainer');
+
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-center';
+    row.dataset.index = orderDetailCount;
+
+    row.innerHTML = `
+        <select id="detailServiceId_${orderDetailCount}" class="border rounded px-2 py-1 w-1/2">
+            <option value="">Pilih Service</option>
+        </select>
+        <input id="detailQuantity_${orderDetailCount}" type="number" min="1" value="1" class="border rounded px-2 py-1 w-20 text-center" />
+        <input id="detailSubtotal_${orderDetailCount}" type="number" min="0" placeholder="Subtotal" class="border rounded px-2 py-1 w-32 text-right" readonly />
+        <button type="button" onclick="removeOrderDetailRow(${orderDetailCount})" class="text-red-500 hover:text-red-700">Hapus</button>
+    `;
+    container.appendChild(row);
+
+    loadServiceDropdown(`detailServiceId_${orderDetailCount}`);
+}
+
+// ===== Hapus baris detail =====
+function removeOrderDetailRow(index) {
+    const row = document.querySelector(`[data-index="${index}"]`);
+    if (row) row.remove();
+}
+
+// ===== Load dropdown layanan =====
+async function loadServiceDropdown(selectId) {
+    const services = await fetchServices();
+    const select = document.getElementById(selectId);
+    select.innerHTML = '<option value="">Pilih Service</option>' +
+        services.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`).join('');
+
+    select.addEventListener('change', e => updateSubtotal(selectId));
+    document.getElementById(`detailQuantity_${selectId.split('_')[1]}`).addEventListener('input', () => updateSubtotal(selectId));
+}
+
+// ===== Update subtotal =====
+function updateSubtotal(selectId) {
+    const index = selectId.split('_')[1];
+    const serviceSelect = document.getElementById(selectId);
+    const quantity = parseInt(document.getElementById(`detailQuantity_${index}`).value || 0);
+    const price = parseInt(serviceSelect.selectedOptions[0]?.dataset.price || 0);
+    const subtotal = price * quantity;
+
+    document.getElementById(`detailSubtotal_${index}`).value = subtotal;
+}
+
+// ===== Hitung total =====
+function calculateTotalPrice() {
+    const subtotals = document.querySelectorAll('[id^="detailSubtotal_"]');
+    let total = 0;
+    subtotals.forEach(input => {
+        total += parseInt(input.value || 0);
+    });
+    return total;
+}
+
+// ===== Render semua order =====
+async function renderOrders() {
+    const tbody = document.getElementById('orderTableBody');
+    const orders = await fetchOrders();
+
+    if (!orders.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">Belum ada data order.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = orders.map((order, index) => `
+        <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-4 border-b">${index + 1}</td>
+            <td class="px-4 py-4 border-b">${order.customer?.name || '-'}</td>
+            <td class="px-4 py-4 border-b">${order.user?.name || '-'}</td>
+            <td class="px-4 py-4 border-b">${order.order_at}</td>
+            <td class="px-4 py-4 border-b">${order.status || '-'}</td>
+            <td class="px-4 py-4 border-b text-right">Rp ${order.total_price?.toLocaleString() || '0'}</td>
+            <td class="px-4 py-4 border-b text-center">
+                <button onclick="handleDetailOrder(${order.id})" class="px-3 py-1 bg-black text-white rounded hover:bg-gray-800">Edit</button>
+                <button onclick="handleDeleteOrder(${order.id})" class="px-3 py-1 bg-gray-300 text-black rounded hover:bg-gray-400">Hapus</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ===== Load dropdown data =====
+async function loadDropdownData() {
+    const customers = await fetchCustomers();
+    const customerOptions = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    document.querySelectorAll('#inputCustomerId, #detailCustomerId').forEach(sel => sel.innerHTML = `<option value="">Pilih Customer</option>${customerOptions}`);
+}
+
+// ===== CREATE ORDER + DETAIL =====
+async function handleCreateOrder() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const userId = user.id;
+
+    const detailRows = document.querySelectorAll('#orderDetailsContainer > div');
+    const details = [];
+
+    for (let row of detailRows) {
+        const index = row.dataset.index;
+        const serviceId = document.getElementById(`detailServiceId_${index}`).value;
+        const quantity = parseInt(document.getElementById(`detailQuantity_${index}`).value);
+        const subtotal = parseInt(document.getElementById(`detailSubtotal_${index}`).value);
+        if (!serviceId) continue;
+
+        details.push({ service_id: serviceId, quantity, subtotal });
+    }
+
+    if(details.length === 0) return alert('Tambahkan minimal 1 detail order');
+
+    const totalPrice = details.reduce((sum, d) => sum + d.subtotal, 0);
+
+    const data = {
+        customer_id: document.getElementById('inputCustomerId').value,
+        user_id: userId,
+        order_at: document.getElementById('inputOrderAt').value,
+        status: document.getElementById('inputStatus').value,
+        total_price: totalPrice,
+        details: details // <-- kirim semua detail di sini
+    };
+
+    try {
+        const orderRes = await createOrder(data);
+        if (!orderRes || !orderRes.data?.id) {
+            return alert('Gagal membuat order');
+        }
+
+        closeModal('tambahOrderModal');
+        renderOrders();
+    } catch (err) {
+        console.error('Error createOrder', err);
+        alert('Gagal membuat order: ' + err.message);
+    }
+}
+
+
+// ===== Update Order =====
+async function handleUpdateOrder() {
+    if(!currentEditOrderId) return;
+
+    const data = {
+        customer_id: document.getElementById('detailCustomerId').value,
+        order_at: document.getElementById('detailOrderAt').value,
+        status: document.getElementById('detailStatus').value,
+        total_price: document.getElementById('detailTotalPrice').value,
+    };
+
+    const res = await updateOrder(currentEditOrderId, data);
+    if(res){
+        closeModal('detailOrderModal');
+        renderOrders();
+    }
+}
+
+// ===== Delete Order =====
+async function handleDeleteOrder(id) {
+    if(confirm('Yakin ingin menghapus order ini?')){
+        const res = await deleteOrder(id);
+        if(res) renderOrders();
+    }
+}
+
+// ===== Edit Order =====
+async function handleDetailOrder(id) {
+    const order = await fetchOrderById(id);
+    if(!order) return alert('Order tidak ditemukan');
+
+    currentEditOrderId = id;
+
+    document.getElementById('detailCustomerId').value = order.customer_id;
+    document.getElementById('detailOrderAt').value = order.order_at;
+    document.getElementById('detailStatus').value = order.status || '';
+    document.getElementById('detailTotalPrice').value = order.total_price || '';
+
+    openModal('detailOrderModal');
+}
+function showNewCustomerForm() {
+    document.getElementById('newCustomerContainer').classList.toggle('hidden');
+}
+
+async function handleCreateCustomerFromOrder() {
+    const data = {
+        name: document.getElementById('inputName').value.trim(),
+        phone: document.getElementById('inputPhone').value.trim(),
+        address: document.getElementById('inputAddress').value.trim(),
+    };
+
+    if (!data.name) return alert('Nama wajib diisi');
+
+    try {
+        const res = await createCustomer(data);
+        console.log('Hasil create customer:', res);
+
+        // Ambil customer dari response
+        const createdCustomer = res.customer; // <-- di sini penting, sesuaikan dengan respons API
+
+        if (!createdCustomer || !createdCustomer.id) return alert('Gagal menambahkan customer');
+
+        // Tambahkan ke dropdown dan pilih otomatis
+        const select = document.getElementById('inputCustomerId');
+        const option = document.createElement('option');
+        option.value = createdCustomer.id;
+        option.text = createdCustomer.name;
+        option.selected = true;
+        select.appendChild(option);
+
+        // Reset form
+        document.getElementById('inputName').value = '';
+        document.getElementById('inputPhone').value = '';
+        document.getElementById('inputAddress').value = '';
+        document.getElementById('newCustomerContainer').classList.add('hidden');
+
+        alert('Customer berhasil ditambahkan'); // notif sukses
+    } catch (err) {
+        console.error('Error createCustomer', err);
+        alert('Gagal menambahkan customer: ' + err.message);
+    }
+}
+
+
+// ==== Jalankan saat halaman dimuat ====
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadDropdownData();
+    await renderOrders();
+});
+</script>
+@endsection
