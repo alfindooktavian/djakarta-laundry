@@ -1,5 +1,6 @@
 <div id="sidebar"
-    class="flex flex-col justify-between min-h-screen bg-white z-50 shadow-md transition-all duration-300 ease-in-out">
+    class="flex flex-col justify-between h-screen sticky top-0 bg-white z-50 shadow-md transition-all duration-300 ease-in-out">
+
 
     <!-- Bagian atas: Logo dan navigasi -->
     <div>
@@ -57,7 +58,7 @@
     <!-- Bagian bawah Logout -->
     <div class="p-1">
         <div id="sidebarFooter"
-            class="flex items-center justify-between bg-black text-white rounded-lg px-4 py-2 h-16 transition-all duration-300">
+            class="flex items-center justify-between bg-black text-white rounded-lg px-4 py-2 h-14 transition-all duration-300">
 
             <!-- Profil user -->
             <div id="userProfile" class="flex items-center gap-3 transition-all duration-300">
@@ -82,11 +83,31 @@
 <script>
     // Ambil data user dari localStorage
     const userData = localStorage.getItem("user");
+    let userRole = "";
     if (userData) {
         const user = JSON.parse(userData);
         document.getElementById("userName").textContent = user.name || "User";
         document.getElementById("userRole").textContent = user.role || "Role tidak diketahui";
+        userRole = user.role;
     }
+
+    // Fungsi untuk show/hide menu sesuai role
+    const menuItems = [
+        { selector: "a[href='{{ route('dashboard') }}']", roles: ["superadmin", "owner", "karyawan"] },
+        { selector: "a[href='{{ route('administrator') }}']", roles: ["superadmin"] },
+        { selector: "a[href='{{ route('service') }}']", roles: ["superadmin", "owner"] },
+        { selector: "a[href='{{ route('customer') }}']", roles: ["superadmin", "owner", "karyawan"] },
+        { selector: "a[href='{{ route('order') }}']", roles: ["superadmin", "owner", "karyawan"] },
+        { selector: "a[href='{{ route('chat') }}']", roles: ["superadmin", "owner"] },
+        { selector: "a[href='{{ route('report') }}']", roles: ["superadmin", "owner"] },
+    ];
+
+    menuItems.forEach(item => {
+        const el = document.querySelector(item.selector);
+        if (el && !item.roles.includes(userRole)) {
+            el.style.display = "none"; // hide jika role tidak sesuai
+        }
+    });
 
     // Logout event
     document.getElementById('logoutBtn').addEventListener('click', async (e) => {

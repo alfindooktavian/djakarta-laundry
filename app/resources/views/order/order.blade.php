@@ -30,41 +30,40 @@
 </div>
 
 <!-- Modal Tambah Order -->
-<div id="tambahOrderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative overflow-y-auto max-h-[90vh]">
-        <button onclick="closeModal('tambahOrderModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
+<x-modal id="tambahOrderModal" title="Tambah Order">
+    <div class="flex flex-col gap-2">
+        <!-- Customer Baru -->
+        <button type="button" onclick="showNewCustomerForm()" 
+            class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm mb-2">
+            + Customer Baru
         </button>
-        <h2 class="text-xl font-semibold mb-4">Tambah Order</h2>
 
-        <div class="flex flex-col gap-1 mb-4">
-    <button type="button" onclick="showNewCustomerForm()" 
-        class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm mb-2">
-        + Customer Baru
-    </button>
+        <div id="newCustomerContainer" class="flex flex-col gap-2 mb-2 hidden">
+            <input id="inputName" type="text" class="border rounded px-3 py-2 w-full" placeholder="Nama Customer" />
+            <input id="inputPhone" type="text" class="border rounded px-3 py-2 w-full" placeholder="No. Telepon" />
+            <input id="inputAddress" type="text" class="border rounded px-3 py-2 w-full" placeholder="Alamat" />
+            <button type="button" onclick="handleCreateCustomerFromOrder()" 
+                class="px-3 py-2 bg-black text-white rounded hover:bg-gray-800 transition text-sm">
+                Simpan Customer
+            </button>
+        </div>
 
-    <div id="newCustomerContainer" class="flex flex-col gap-2 mb-2 hidden">
-        <input id="inputName" type="text" class="border rounded px-3 py-2 w-full" placeholder="Nama Customer" />
-        <input id="inputPhone" type="text" class="border rounded px-3 py-2 w-full" placeholder="No. Telepon" />
-        <input id="inputAddress" type="text" class="border rounded px-3 py-2 w-full" placeholder="Alamat" />
-        <button type="button" onclick="handleCreateCustomerFromOrder()" 
-            class="px-3 py-2 bg-black text-white rounded hover:bg-gray-800 transition text-sm">
-            Simpan Customer
-        </button>
-    </div>
+        <!-- Pilih Customer -->
+        <div>
+            <label class="text-gray-700">Pilih Customer</label>
+            <select id="inputCustomerId" class="border rounded px-3 py-2 w-full">
+                <option value="">Memuat data...</option>
+            </select>
+        </div>
 
-    <label class="text-gray-700">Pilih Customer</label>
-    <select id="inputCustomerId" class="border rounded px-3 py-2 w-full">
-        <option value="">Memuat data...</option>
-    </select>
-</div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <!-- Tanggal Order -->
+        <div>
             <label class="text-gray-700">Tanggal Order</label>
             <input id="inputOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
         </div>
 
-        <div class="flex flex-col gap-1 mb-4">
+        <!-- Status -->
+        <div>
             <label class="text-gray-700">Status</label>
             <select id="inputStatus" class="border rounded px-3 py-2 w-full">
                 <option value="">Pilih Status</option>
@@ -75,46 +74,40 @@
             </select>
         </div>
 
-        <!-- ==== Detail Order Section ==== -->
+        <!-- Detail Order -->
         <div class="border-t pt-4 mt-4">
             <h3 class="text-lg font-semibold mb-2">Detail Order</h3>
-
             <div id="orderDetailsContainer" class="flex flex-col gap-3"></div>
-
             <button type="button" onclick="addOrderDetailRow()" 
                 class="mt-2 px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm">
                 + Tambah Layanan
             </button>
         </div>
-
-        <div class="flex justify-end gap-2 mt-4">
-            <button onclick="closeModal('tambahOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Batal</button>
-            <button onclick="handleCreateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
-        </div>
     </div>
-</div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('tambahOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+        <button onclick="handleCreateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+    </x-slot>
+</x-modal>
+
 
 <!-- Modal Edit Order -->
-<div id="detailOrderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
-        <button onclick="closeModal('detailOrderModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
-        </button>
-        <h2 class="text-xl font-semibold mb-4">Edit Order</h2>
-
-        <div class="flex flex-col gap-1 mb-4">
+<x-modal id="detailOrderModal" title="Edit Order">
+    <div class="flex flex-col gap-2">
+        <div>
             <label class="text-gray-700">Pilih Customer</label>
             <select id="detailCustomerId" class="border rounded px-3 py-2 w-full">
                 <option value="">Memuat data...</option>
             </select>
         </div>
 
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Tanggal Order</label>
             <input id="detailOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
         </div>
 
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Status</label>
             <select id="detailStatus" class="border rounded px-3 py-2 w-full">
                 <option value="diterima">Diterima</option>
@@ -124,17 +117,18 @@
             </select>
         </div>
 
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Total Harga</label>
             <input id="detailTotalPrice" type="number" class="border rounded px-3 py-2 w-full" readonly />
         </div>
-
-        <div class="flex justify-end gap-2">
-            <button onclick="closeModal('detailOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Tutup</button>
-            <button onclick="handleUpdateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
-        </div>
     </div>
-</div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('detailOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
+        <button onclick="handleUpdateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+    </x-slot>
+</x-modal>
+
 
 @vite([
     'resources/js/api/orders.js',
@@ -213,7 +207,9 @@ async function renderOrders() {
     const orders = await fetchOrders();
 
     if (!orders.length) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">Belum ada data order.</td></tr>`;
+        tbody.innerHTML = `<tr>
+            <td colspan="7" class="text-center py-4 text-gray-500">Belum ada data order.</td>
+        </tr>`;
         return;
     }
 
@@ -226,12 +222,31 @@ async function renderOrders() {
             <td class="px-4 py-4 border-b">${order.status || '-'}</td>
             <td class="px-4 py-4 border-b text-right">Rp ${order.total_price?.toLocaleString() || '0'}</td>
             <td class="px-4 py-4 border-b text-center">
-                <button onclick="handleDetailOrder(${order.id})" class="px-3 py-1 bg-black text-white rounded hover:bg-gray-800">Edit</button>
-                <button onclick="handleDeleteOrder(${order.id})" class="px-3 py-1 bg-gray-300 text-black rounded hover:bg-gray-400">Hapus</button>
+                <div class="flex justify-center items-center gap-4">
+                    <!-- Tombol Edit -->
+                    <button 
+                        onclick="handleDetailOrder(${order.id})"
+                        class="flex justify-center items-center rounded-lg border font-inter text-[16px] leading-none"
+                        style="background-color:#1E1E1E; border-color:#2C2C2C; color:#F5F5F5; width:64.5px; height:32px;"
+                    >
+                        Edit
+                    </button>
+
+                    <!-- Tombol Hapus -->
+                    <button 
+    onclick="handleDeleteOrder(${order.id})"
+    class="flex justify-center items-center rounded-lg border font-inter text-[16px] leading-none text-white"
+    style="background-color:#EF4444; border-color:#B91C1C; width:64.5px; height:32px;"
+>
+    Hapus
+</button>
+
+                </div>
             </td>
         </tr>
     `).join('');
 }
+
 
 // ===== Load dropdown data =====
 async function loadDropdownData() {

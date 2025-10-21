@@ -28,70 +28,57 @@
 </div>
 
 <!-- Modal Tambah Service -->
-<div id="tambahServiceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
-        <button onclick="closeModal('tambahServiceModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
-        </button>
-        <h2 class="text-xl font-semibold mb-4">Tambah Service</h2>
-
-        <div class="flex flex-col gap-1 mb-4">
+<x-modal id="tambahServiceModal" title="Tambah Service">
+    <div class="flex flex-col gap-2">
+        <div>
             <label class="text-gray-700">Nama</label>
-            <input id="inputName" type="text" name="name" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Nama Service" />
+            <input id="inputName" type="text" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Nama Service" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Harga</label>
-            <input id="inputPrice" type="number" name="price" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Harga" />
+            <input id="inputPrice" type="number" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Harga" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Tipe</label>
-            <select id="inputType" name="type" class="border rounded px-3 py-2 w-full">
+            <select id="inputType" class="border rounded px-3 py-2 w-full">
                 <option value="kg">Kilogram (kg)</option>
                 <option value="item">Item (pcs)</option>
             </select>
         </div>
-
-        <div class="flex justify-end gap-2">
-            <button onclick="closeModal('tambahServiceModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Batal</button>
-            <button onclick="handleCreateService()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
-        </div>
     </div>
-</div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('tambahServiceModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+        <button onclick="handleCreateService()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+    </x-slot>
+</x-modal>
 
 <!-- Modal Detail / Edit Service -->
-<div id="detailServiceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
-        <button onclick="closeModal('detailServiceModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
-        </button>
-        <h2 class="text-xl font-semibold mb-4">Edit Service</h2>
-
-        <div class="flex flex-col gap-1 mb-4">
+<x-modal id="detailServiceModal" title="Edit Service">
+    <div class="flex flex-col gap-2">
+        <div>
             <label class="text-gray-700">Nama</label>
             <input id="detailName" type="text" class="border rounded px-3 py-2 w-full" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Harga</label>
             <input id="detailPrice" type="number" class="border rounded px-3 py-2 w-full" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Tipe</label>
             <select id="detailType" class="border rounded px-3 py-2 w-full">
                 <option value="kg">Kilogram (kg)</option>
                 <option value="item">Item (pcs)</option>
             </select>
         </div>
-
-        <div class="flex justify-end gap-2">
-            <button onclick="closeModal('detailServiceModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Tutup</button>
-            <button onclick="handleUpdateService()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
-        </div>
     </div>
-</div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('detailServiceModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
+        <button onclick="handleUpdateService()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+    </x-slot>
+</x-modal>
+
 
 @vite('resources/js/api/services.js')
 
@@ -128,12 +115,13 @@ async function renderServices() {
                         Edit
                     </button>
                     <button 
-                        onclick="handleDeleteService(${service.id})"
-                        class="flex justify-center items-center rounded-lg border text-[#1E1E1E] font-inter text-[16px]"
-                        style="background-color:#CDCDCD; border-color:#767676; width:64.5px; height:32px;"
-                    >
-                        Hapus
-                    </button>
+    onclick="handleDeleteService(${service.id})"
+    class="flex justify-center items-center rounded-lg border font-inter text-[16px] text-white"
+    style="background-color:#EF4444; border-color:#B91C1C; width:64.5px; height:32px;"
+>
+    Hapus
+</button>
+
                 </div>
             </td>
         </tr>

@@ -35,26 +35,32 @@ class UserController extends Controller
 
     // Login user & buat token
     public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email|max:50',
-            'password' => 'required|string|max:100',
-        ]);
+{
+    $request->validate([
+        'email' => 'required|email|max:50',
+        'password' => 'required|string|max:100',
+    ]);
 
-        $user = User::where('email', $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Email atau password salah'], 401);
-        }
-
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login berhasil',
-            'user' => $user,
-            'token' => $token
-        ]);
+    // Cek user ada dan password sesuai
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Email atau password salah'], 401);
     }
+
+    // Cek status aktif
+    if ($user->status !== 'aktif') {
+        return response()->json(['message' => 'Akun Anda nonaktif, tidak bisa login'], 403);
+    }
+
+    $token = $user->createToken('api-token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Login berhasil',
+        'user' => $user,
+        'token' => $token
+    ]);
+}
 
     // Logout user
     public function logout(Request $request)

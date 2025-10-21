@@ -50,6 +50,11 @@
 
     <!-- Script -->
     <script type="module">
+        // Cek api_token di localStorage saat halaman load
+        if (localStorage.getItem('api_token')) {
+            window.location.href = "/dashboard"; // langsung lempar ke dashboard
+        }
+
         const form = document.getElementById('loginForm');
         const errorElement = document.getElementById('error');
 
@@ -67,6 +72,7 @@
                 errorElement.classList.remove('hidden');
             } else {
                 errorElement.classList.add('hidden');
+                localStorage.setItem('api_token', result.token); // simpan api_token
                 window.location.href = "/dashboard";
             }
         });

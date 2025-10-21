@@ -28,64 +28,52 @@
 </div>
 
 <!-- Modal Tambah Customer -->
-<div id="tambahCustomerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
-        <button onclick="closeModal('tambahCustomerModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
-        </button>
-        <h2 class="text-xl font-semibold mb-4">Tambah Customer</h2>
-
-        <div class="flex flex-col gap-1 mb-4">
+<x-modal id="tambahCustomerModal" title="Tambah Customer">
+    <div class="flex flex-col gap-2">
+        <div>
             <label class="text-gray-700">Nama</label>
-            <input id="inputName" type="text" name="name" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Nama Pelanggan" />
+            <input id="inputName" type="text" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Nama Pelanggan" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Telepon</label>
-            <input id="inputPhone" type="text" name="phone" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Nomor Telepon" />
+            <input id="inputPhone" type="text" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Nomor Telepon" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Alamat</label>
-            <textarea id="inputAddress" name="address" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Alamat"></textarea>
-        </div>
-
-        <div class="flex justify-end gap-2">
-            <button onclick="closeModal('tambahCustomerModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Batal</button>
-            <button onclick="handleCreateCustomer()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
+            <textarea id="inputAddress" class="border rounded px-3 py-2 w-full" placeholder="Masukkan Alamat"></textarea>
         </div>
     </div>
-</div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('tambahCustomerModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+        <button onclick="handleCreateCustomer()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+    </x-slot>
+</x-modal>
+
 
 <!-- Modal Detail / Edit Customer -->
-<div id="detailCustomerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
-        <button onclick="closeModal('detailCustomerModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
-        </button>
-        <h2 class="text-xl font-semibold mb-4">Edit Customer</h2>
-
-        <div class="flex flex-col gap-1 mb-4">
+<x-modal id="detailCustomerModal" title="Edit Customer">
+    <div class="flex flex-col gap-2">
+        <div>
             <label class="text-gray-700">Nama</label>
             <input id="detailName" type="text" class="border rounded px-3 py-2 w-full" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Telepon</label>
             <input id="detailPhone" type="text" class="border rounded px-3 py-2 w-full" />
         </div>
-
-        <div class="flex flex-col gap-1 mb-4">
+        <div>
             <label class="text-gray-700">Alamat</label>
             <textarea id="detailAddress" class="border rounded px-3 py-2 w-full"></textarea>
         </div>
-
-        <div class="flex justify-end gap-2">
-            <button onclick="closeModal('detailCustomerModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">Tutup</button>
-            <button onclick="handleUpdateCustomer()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Simpan</button>
-        </div>
     </div>
-</div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('detailCustomerModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
+        <button onclick="handleUpdateCustomer()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+    </x-slot>
+</x-modal>
+
 
 @vite('resources/js/api/customers.js')
 
@@ -123,12 +111,13 @@ async function renderCustomers() {
                         Edit
                     </button>
                     <button 
-                        onclick="handleDeleteCustomer(${customer.id})"
-                        class="flex justify-center items-center rounded-lg border text-[#1E1E1E] font-inter text-[16px]"
-                        style="background-color:#CDCDCD; border-color:#767676; width:64.5px; height:32px;"
-                    >
-                        Hapus
-                    </button>
+    onclick="handleDeleteCustomer(${customer.id})"
+    class="flex justify-center items-center rounded-lg border text-white font-inter text-[16px]"
+    style="background-color:#EF4444; border-color:#B91C1C; width:64.5px; height:32px;"
+>
+    Hapus
+</button>
+
                 </div>
             </td>
         </tr>
