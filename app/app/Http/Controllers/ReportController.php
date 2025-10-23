@@ -24,61 +24,23 @@ class ReportController extends Controller
     }
 
     /**
-     * Export laporan ke Excel
-     */
-    public function exportExcel(Request $request)
-    {
-        try {
-            $orders = $this->filterOrders($request);
-
-            if ($orders->isEmpty()) {
-                return response()->json(['message' => 'Tidak ada data untuk diexport'], 404);
-            }
-
-            $data = $orders->map(function ($order, $i) {
-                return [
-                    'No' => $i + 1,
-                    'Pelanggan' => $order->customer->name ?? '-',
-                    'Kasir' => $order->user->name ?? '-',
-                    'Tanggal Order' => $order->order_at
-                        ? \Carbon\Carbon::parse($order->order_at)->format('d/m/Y')
-                        : '-',
-                    'Status' => $order->status ?? '-',
-                    'Total Harga' => $order->total_price ?? 0,
-                ];
-            })->toArray();
-
-            $export = new class($data) implements FromArray, WithHeadings {
-                protected $data;
-                public function __construct($data) { $this->data = $data; }
-                public function array(): array { return $this->data; }
-                public function headings(): array {
-                    return ['No', 'Pelanggan', 'Kasir', 'Tanggal Order', 'Status', 'Total Harga'];
-                }
-            };
-
-            $fileName = 'laporan-transaksi-' . now()->format('Ymd-His') . '.xlsx';
-            return Excel::download($export, $fileName);
-
-        } catch (\Throwable $e) {
-            Log::error('Error exportExcel: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Gagal generate Excel',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
      * Export laporan ke PDF
      */
     public function exportPDF(Request $request)
     {
         $orders = $this->filterOrders($request);
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', ['orders' => $orders]);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', [
+            'orders' => $orders,
+            'period' => $request->period,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ]);
+
         $fileName = 'laporan-transaksi-' . now()->format('Ymd-His') . '.pdf';
         return $pdf->download($fileName);
     }
+
 
 
     /**

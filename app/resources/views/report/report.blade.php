@@ -66,11 +66,7 @@
                         class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">
                     Batal
                 </button>
-                <button onclick="handleDownload('excel')" 
-                        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-                    Download Excel
-                </button>
-                <button onclick="handleDownload('pdf')" 
+                <button onclick="handleDownloadPDF()" 
                         class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
                     Download PDF
                 </button>
@@ -82,7 +78,6 @@
 @vite('resources/js/api/report.js')
 
 <script>
-/* ==== Modal Control ==== */
 function openModal(id) {
     document.getElementById(id).classList.remove('hidden');
     document.getElementById(id).classList.add('flex');
@@ -93,7 +88,7 @@ function closeModal(id) {
     document.getElementById(id).classList.remove('flex');
 }
 
-/* ==== Event: Show date range when "Custom" selected ==== */
+
 document.addEventListener('DOMContentLoaded', () => {
     const periodSelect = document.getElementById('reportPeriod');
     const customFields = document.getElementById('customDateFields');
@@ -102,11 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
         customFields.classList.toggle('hidden', periodSelect.value !== 'custom');
     });
 
-    renderReports(); // Load laporan saat halaman dibuka
+    renderReports(); 
 });
 
-/* ==== Handle Download ==== */
-function handleDownload(type) {
+function handleDownloadPDF() {
     const period = document.getElementById('reportPeriod').value;
     let params = `period=${period}`;
 
@@ -122,11 +116,10 @@ function handleDownload(type) {
         params += `&start_date=${start}&end_date=${end}`;
     }
 
-    downloadReport(type, params);
+    downloadReport('pdf', params);
     closeModal('downloadReportModal');
 }
 
-/* ==== Render Data Laporan ==== */
 async function renderReports() {
     const tbody = document.getElementById('reportTableBody');
     tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Memuat data...</td></tr>`;
