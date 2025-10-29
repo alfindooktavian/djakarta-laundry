@@ -3,22 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    // ✅ List semua order
+    // ✅ List semua order (termasuk payments)
     public function index()
     {
-        $orders = Order::with(['customer', 'user', 'orderDetails.service'])->get();
+        $orders = Order::with(['customer', 'user', 'orderDetails.service', 'payments'])->get();
         return response()->json($orders);
     }
 
-    // ✅ Detail order
+    // ✅ Detail order (termasuk payments)
     public function show($id)
     {
-        $order = Order::with(['customer', 'user', 'orderDetails.service'])->findOrFail($id);
+        $order = Order::with(['customer', 'user', 'orderDetails.service', 'payments'])->findOrFail($id);
         return response()->json($order);
     }
 
@@ -35,10 +36,9 @@ class OrderController extends Controller
             'details.*.subtotal'   => 'required|numeric|min:0',
         ]);
 
-        // Ambil user yang sedang login
         $userId = Auth::id();
 
-        // Hitung total harga otomatis dari subtotal semua detail
+        // Hitung total harga otomatis
         $totalPrice = collect($validated['details'])->sum('subtotal');
 
         // Simpan order utama
@@ -50,14 +50,23 @@ class OrderController extends Controller
             'total_price' => $totalPrice,
         ]);
 
-        // Simpan semua detail
+        // Simpan semua detail order
         foreach ($validated['details'] as $detail) {
             $order->orderDetails()->create($detail);
         }
 
+        // ✅ Buat data payment otomatis (status unpaid, method null)
+        Payment::create([
+            'order_id' => $order->id,
+            'amount'   => $totalPrice,
+            'method' => 'cash',
+            'status'   => 'unpaid',
+            'paid_at'  => null,
+        ]);
+
         return response()->json([
-            'message' => 'Order dan detail berhasil dibuat',
-            'data'    => $order->load(['customer', 'user', 'orderDetails.service']),
+            'message' => 'Order, detail, dan payment berhasil dibuat',
+            'data'    => $order->load(['customer', 'user', 'orderDetails.service', 'payments']),
         ], 201);
     }
 
@@ -73,19 +82,19 @@ class OrderController extends Controller
             'details.*.service_id' => 'required_with:details|exists:services,id',
             'details.*.quantity'   => 'required_with:details|integer|min:1',
             'details.*.subtotal'   => 'required_with:details|numeric|min:0',
-            'deleted_details'      => 'nullable|array', // ✅ daftar id detail yang dihapus
+            'deleted_details'      => 'nullable|array',
         ]);
 
         $order = Order::with('orderDetails')->findOrFail($id);
 
-        // ✅ Update data utama
+        // Update data utama
         $order->update([
             'customer_id' => $validated['customer_id'] ?? $order->customer_id,
             'order_at'    => $validated['order_at'] ?? $order->order_at,
             'status'      => $validated['status'] ?? $order->status,
         ]);
 
-        // ✅ Update / Tambah detail
+        // Update / Tambah detail
         if (!empty($validated['details'])) {
             foreach ($validated['details'] as $detail) {
                 if (isset($detail['id'])) {
@@ -106,30 +115,37 @@ class OrderController extends Controller
             }
         }
 
-        // ✅ Hapus detail yang dikirim dari frontend (saat klik simpan edit)
+        // Hapus detail jika ada
         if (!empty($validated['deleted_details'])) {
             $order->orderDetails()->whereIn('id', $validated['deleted_details'])->delete();
         }
 
-        // ✅ Hitung ulang total harga
+        // ✅ Hitung ulang total harga & update payment
         $totalPrice = $order->orderDetails()->sum('subtotal');
         $order->update(['total_price' => $totalPrice]);
 
+        // Update amount di payment jika ada
+        $payment = Payment::where('order_id', $order->id)->first();
+        if ($payment) {
+            $payment->update(['amount' => $totalPrice]);
+        }
+
         return response()->json([
             'message' => 'Order berhasil diupdate',
-            'data'    => $order->load(['customer', 'user', 'orderDetails.service']),
+            'data'    => $order->load(['customer', 'user', 'orderDetails.service', 'payments']),
         ]);
     }
 
-    // ✅ Hapus order (beserta detail)
+    // ✅ Hapus order (beserta detail dan payments)
     public function destroy($id)
     {
         $order = Order::findOrFail($id);
-        $order->orderDetails()->delete(); // hapus semua detail dulu
+        $order->orderDetails()->delete();
+        Payment::where('order_id', $id)->delete(); // hapus payment juga
         $order->delete();
 
         return response()->json([
-            'message' => 'Order dan semua detail berhasil dihapus',
+            'message' => 'Order, detail, dan payment berhasil dihapus',
         ]);
     }
 }

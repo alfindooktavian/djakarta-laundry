@@ -149,13 +149,49 @@
     </x-slot>
 </x-modal>
 
+<!-- Modal Pembayaran -->
+<x-modal id="paymentModal" title="Pembayaran">
+    <div class="flex flex-col gap-3">
+        <input type="hidden" id="paymentOrderId" />
+        
+        <div>
+            <label class="text-gray-700">Total Harga</label>
+            <input id="paymentTotal" type="number" class="border rounded px-3 py-2 w-full bg-gray-100" readonly />
+        </div>
+
+        <div>
+            <label class="text-gray-700">Metode Pembayaran</label>
+            <select id="paymentMethod" class="border rounded px-3 py-2 w-full">
+                <option value="cash">Cash</option>
+                <option value="transfer">Transfer</option>
+                <option value="ewallet">E-Wallet</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="text-gray-700">Status</label>
+            <select id="paymentStatus" class="border rounded px-3 py-2 w-full">
+                <option value="unpaid">Belum Dibayar</option>
+                <option value="paid">Sudah Dibayar</option>
+            </select>
+        </div>
+    </div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('paymentModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
+        <button onclick="handleUpdatePayment()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+    </x-slot>
+</x-modal>
+
+
 
 
 @vite([
     'resources/js/api/orders.js',
     'resources/js/api/customers.js',
     'resources/js/api/order-details.js',
-    'resources/js/api/services.js'
+    'resources/js/api/services.js',
+    'resources/js/api/payments.js' 
 ])
 
 <script>
@@ -163,6 +199,7 @@ let currentEditOrderId = null;
 let orderDetailCount = 0;
 let deletedDetailIds = [];
 let editDetailCount = 0; 
+let currentPaymentId = null;
 
 // ===== Tambah baris order detail =====
 function addOrderDetailRow() {
@@ -245,26 +282,44 @@ async function renderOrders() {
             <td class="px-4 py-4 border-b">${order.status || '-'}</td>
             <td class="px-4 py-4 border-b text-right">Rp ${order.total_price?.toLocaleString() || '0'}</td>
             <td class="px-4 py-4 border-b text-center">
-                <div class="flex justify-center items-center gap-4">
-                    <!-- Tombol Edit -->
-                    <button 
-                        onclick="handleDetailOrder(${order.id})"
-                        class="flex justify-center items-center rounded-lg border font-inter text-[16px] leading-none"
-                        style="background-color:#1E1E1E; border-color:#2C2C2C; color:#F5F5F5; width:64.5px; height:32px;"
-                    >
-                        Edit
-                    </button>
+            <div class="flex justify-center items-center gap-4">
+    <!-- Tombol Pembayaran -->
+    <button 
+        onclick="handlePayment(${order.id})"
+        class="flex justify-center items-center rounded-lg text-white px-2 h-8 
+               bg-gradient-to-r from-blue-500 to-blue-400 border border-green-700
+               shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300"
+    >
+        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
+                       icon="mdi:credit-card-outline" width="20" height="20" color="#FFFFFF">
+        </iconify-icon>
+    </button>
 
-                    <!-- Tombol Hapus -->
-                    <button 
-    onclick="handleDeleteOrder(${order.id})"
-    class="flex justify-center items-center rounded-lg border font-inter text-[16px] leading-none text-white"
-    style="background-color:#EF4444; border-color:#B91C1C; width:64.5px; height:32px;"
->
-    Hapus
-</button>
+    <!-- Tombol Detail -->
+    <button 
+        onclick="handleDetailOrder(${order.id})"
+        class="flex justify-center items-center rounded-lg text-white w-8 h-8
+               bg-gray-800 border border-gray-700 shadow-md hover:shadow-xl
+               transform hover:scale-110 transition-all duration-300"
+    >
+        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
+                       icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF">
+        </iconify-icon>
+    </button>
 
-                </div>
+    <!-- Tombol Hapus -->
+    <button 
+        onclick="handleDeleteOrder(${order.id})"
+        class="flex justify-center items-center rounded-lg text-white w-8 h-8
+               bg-red-600 border border-red-800 shadow-md hover:shadow-xl
+               transform hover:scale-110 transition-all duration-300"
+    >
+        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
+                       icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF">
+        </iconify-icon>
+    </button>
+</div>
+
             </td>
         </tr>
     `).join('');
@@ -549,6 +604,49 @@ function updateEditTotalPrice() {
         total += Number.isFinite(v) ? v : 0;
     });
     document.getElementById('detailTotalPrice').value = total;
+}
+
+async function handlePayment(orderId) {
+    document.getElementById('paymentOrderId').value = orderId;
+    const order = await fetchOrderById(orderId);
+    document.getElementById('paymentTotal').value = order.total_price;
+
+    const payment = await fetchPaymentByOrderId(orderId);
+    if (payment) {
+        currentPaymentId = payment.id;
+        document.getElementById('paymentMethod').value = payment.method;
+        document.getElementById('paymentStatus').value = payment.status;
+    } else {
+        currentPaymentId = null;
+        document.getElementById('paymentMethod').value = 'cash';
+        document.getElementById('paymentStatus').value = 'unpaid';
+    }
+
+    openModal('paymentModal');
+}
+
+// Simpan pembayaran (update / create)
+async function handleUpdatePayment() {
+    const orderId = document.getElementById('paymentOrderId').value;
+    const data = {
+        method: document.getElementById('paymentMethod').value,
+        status: document.getElementById('paymentStatus').value,
+        amount: parseFloat(document.getElementById('paymentTotal').value)
+    };
+
+    let res;
+    if (currentPaymentId) {
+        res = await updatePayment(currentPaymentId, data);
+    } else {
+        res = await createPayment({ order_id: orderId, ...data });
+    }
+
+    if (res) {
+        closeModal('paymentModal');
+        alert('Pembayaran berhasil diperbarui');
+    } else {
+        alert('Gagal memperbarui pembayaran');
+    }
 }
 
 

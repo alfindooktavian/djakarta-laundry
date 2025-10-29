@@ -30,50 +30,45 @@
 </div>
 
 <!-- Modal Download -->
-<div id="downloadReportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 p-6 relative">
-        <button onclick="closeModal('downloadReportModal')" 
-                class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-            <iconify-icon icon="mdi:close" width="24" height="24"></iconify-icon>
-        </button>
+<!-- Modal Download Laporan -->
+<x-modal id="downloadReportModal" title="Download Laporan Transaksi">
+    <div class="flex flex-col gap-4">
+        <!-- Pilihan Periode -->
+        <div>
+            <label class="text-gray-700 font-medium">Pilih Periode</label>
+            <select id="reportPeriod" class="border rounded px-3 py-2 w-full">
+                <option value="weekly">Mingguan</option>
+                <option value="monthly">Bulanan</option>
+                <option value="yearly">Tahunan</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
 
-        <h2 class="text-xl font-semibold mb-4">Download Laporan Transaksi</h2>
-
-        <div class="flex flex-col gap-4">
-            <!-- Pilihan Periode -->
+        <!-- Custom Date Range -->
+        <div id="customDateFields" class="hidden flex flex-col gap-2">
             <div>
-                <label class="text-gray-700 font-medium">Pilih Periode</label>
-                <select id="reportPeriod" class="border rounded px-3 py-2 w-full">
-                    <option value="weekly">Mingguan</option>
-                    <option value="monthly">Bulanan</option>
-                    <option value="yearly">Tahunan</option>
-                    <option value="custom">Custom</option>
-                </select>
-            </div>
-
-            <!-- Custom Date Range -->
-            <div id="customDateFields" class="hidden">
                 <label class="text-gray-700 font-medium">Tanggal Mulai</label>
                 <input type="date" id="startDate" class="border rounded px-3 py-2 w-full" />
-
-                <label class="text-gray-700 font-medium mt-2">Tanggal Selesai</label>
-                <input type="date" id="endDate" class="border rounded px-3 py-2 w-full" />
             </div>
-
-            <!-- Tombol -->
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal('downloadReportModal')" 
-                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">
-                    Batal
-                </button>
-                <button onclick="handleDownloadPDF()" 
-                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
-                    Download PDF
-                </button>
+            <div>
+                <label class="text-gray-700 font-medium">Tanggal Selesai</label>
+                <input type="date" id="endDate" class="border rounded px-3 py-2 w-full" />
             </div>
         </div>
     </div>
-</div>
+
+    <x-slot name="footer">
+        <button onclick="closeModal('downloadReportModal')" 
+                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition">
+            Batal
+        </button>
+        <button onclick="handleDownloadPDF()" 
+                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+            Download PDF
+        </button>
+    </x-slot>
+</x-modal>
+
 
 @vite('resources/js/api/report.js')
 

@@ -8,11 +8,28 @@ use Illuminate\Http\Request;
 class PaymentController extends Controller
 {
     // Ambil semua pembayaran
-    public function index()
+    public function index(Request $request)
     {
+        // Cek apakah ada query ?order_id=xxx
+        if ($request->has('order_id')) {
+            $payment = Payment::with('order')
+                ->where('order_id', $request->order_id)
+                ->first();
+    
+            if (!$payment) {
+                return response()->json([
+                    'message' => 'Pembayaran tidak ditemukan untuk order ini'
+                ], 404);
+            }
+    
+            return response()->json($payment);
+        }
+    
+        // Kalau tidak ada order_id, tampilkan semua pembayaran
         $payments = Payment::with('order')->get();
         return response()->json($payments);
     }
+    
 
     // Detail pembayaran
     public function show($id)
@@ -44,21 +61,27 @@ class PaymentController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'order_id' => 'sometimes|required|exists:orders,id',
-            'amount'   => 'sometimes|required|numeric|min:0',
+            'order_id' => 'sometimes|exists:orders,id',
+            'amount'   => 'sometimes|numeric|min:0',
             'method'   => 'sometimes|in:cash,transfer,ewallet',
             'status'   => 'sometimes|in:paid,unpaid',
-            'paid_at'  => 'sometimes|date',
         ]);
-
+    
         $payment = Payment::findOrFail($id);
+    
+        // kalau status diubah jadi paid, isi paid_at otomatis
+        if (isset($validated['status']) && $validated['status'] === 'paid') {
+            $validated['paid_at'] = now();
+        }
+    
         $payment->update($validated);
-
+    
         return response()->json([
             'message' => 'Pembayaran berhasil diupdate',
             'data'    => $payment
         ]);
     }
+    
 
     // Hapus pembayaran
     public function destroy($id)

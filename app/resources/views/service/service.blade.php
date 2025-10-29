@@ -109,17 +109,23 @@ async function renderServices() {
                 <div class="flex justify-center items-center gap-4">
                     <button 
                         onclick="handleDetailService(${service.id})"
-                        class="flex justify-center items-center rounded-lg border text-[#F5F5F5] font-inter text-[16px]"
-                        style="background-color:#1E1E1E; border-color:#2C2C2C; width:64.5px; height:32px;"
-                    >
-                        Edit
+                        class="flex justify-center items-center rounded-lg text-white w-8 h-8
+               bg-gray-800 border border-gray-700 shadow-md hover:shadow-xl
+               transform hover:scale-110 transition-all duration-300"
+    >
+        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
+                       icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF">
+        </iconify-icon>
                     </button>
                     <button 
     onclick="handleDeleteService(${service.id})"
-    class="flex justify-center items-center rounded-lg border font-inter text-[16px] text-white"
-    style="background-color:#EF4444; border-color:#B91C1C; width:64.5px; height:32px;"
->
-    Hapus
+    class="flex justify-center items-center rounded-lg text-white w-8 h-8
+               bg-red-600 border border-red-800 shadow-md hover:shadow-xl
+               transform hover:scale-110 transition-all duration-300"
+    >
+        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
+                       icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF">
+        </iconify-icon>
 </button>
 
                 </div>
