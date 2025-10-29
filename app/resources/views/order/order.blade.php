@@ -94,19 +94,25 @@
 
 <!-- Modal Edit Order -->
 <x-modal id="detailOrderModal" title="Edit Order">
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-3">
+        {{-- === Info Customer === --}}
         <div>
             <label class="text-gray-700">Pilih Customer</label>
             <select id="detailCustomerId" class="border rounded px-3 py-2 w-full">
-                <option value="">Memuat data...</option>
+                <option value="">Pilih Customer...</option>
             </select>
+
+            {{-- Info tambahan customer (otomatis tampil setelah dipilih) --}}
+            <div id="customerInfoContainer" class="mt-2 text-sm text-gray-600"></div>
         </div>
 
+        {{-- === Tanggal Order === --}}
         <div>
             <label class="text-gray-700">Tanggal Order</label>
             <input id="detailOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
         </div>
 
+        {{-- === Status === --}}
         <div>
             <label class="text-gray-700">Status</label>
             <select id="detailStatus" class="border rounded px-3 py-2 w-full">
@@ -117,17 +123,32 @@
             </select>
         </div>
 
+        {{-- === Total Harga === --}}
         <div>
             <label class="text-gray-700">Total Harga</label>
-            <input id="detailTotalPrice" type="number" class="border rounded px-3 py-2 w-full" readonly />
+            <input id="detailTotalPrice" type="number" class="border rounded px-3 py-2 w-full bg-gray-100" readonly />
         </div>
+        {{-- === Detail Order === --}}
+    <div class="border-t pt-4 mt-4">
+        <h3 class="text-lg font-semibold mb-2">Detail Order</h3>
+        <div id="editOrderDetailsContainer" class="flex flex-col gap-3"></div>
+        <button type="button" onclick="addEditOrderDetailRow()" 
+            class="mt-2 px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm">
+            + Tambah Layanan
+        </button>
+    </div>
     </div>
 
     <x-slot name="footer">
-        <button onclick="closeModal('detailOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
-        <button onclick="handleUpdateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+        <button onclick="closeModal('detailOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+            Tutup
+        </button>
+        <button onclick="handleUpdateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">
+            Simpan
+        </button>
     </x-slot>
 </x-modal>
+
 
 
 @vite([
@@ -140,6 +161,8 @@
 <script>
 let currentEditOrderId = null;
 let orderDetailCount = 0;
+let deletedDetailIds = [];
+let editDetailCount = 0; 
 
 // ===== Tambah baris order detail =====
 function addOrderDetailRow() {
@@ -305,19 +328,52 @@ async function handleCreateOrder() {
 async function handleUpdateOrder() {
     if(!currentEditOrderId) return;
 
+    const detailRows = document.querySelectorAll('#editOrderDetailsContainer > div');
+    const details = [];
+
+    for (let row of detailRows) {
+        const index = row.dataset.index;
+        const detailId = row.dataset.id || null;
+        const serviceId = document.getElementById(`editServiceId_${index}`).value;
+        const quantity = parseInt(document.getElementById(`editQuantity_${index}`).value);
+        const subtotal = parseInt(document.getElementById(`editSubtotal_${index}`).value);
+        if (!serviceId) continue;
+
+        details.push({
+            id: detailId,
+            service_id: serviceId,
+            quantity,
+            subtotal
+        });
+    }
+
+    const totalPrice = details.reduce((sum, d) => sum + d.subtotal, 0);
+
     const data = {
         customer_id: document.getElementById('detailCustomerId').value,
         order_at: document.getElementById('detailOrderAt').value,
         status: document.getElementById('detailStatus').value,
-        total_price: document.getElementById('detailTotalPrice').value,
+        total_price: totalPrice,
+        details: details,
+        deleted_details: deletedDetailIds // ✅ kirim array id yang dihapus
     };
 
-    const res = await updateOrder(currentEditOrderId, data);
-    if(res){
-        closeModal('detailOrderModal');
-        renderOrders();
+    try {
+        const res = await updateOrder(currentEditOrderId, data);
+        if(res){
+            deletedDetailIds = []; // ✅ reset array setelah simpan sukses
+            closeModal('detailOrderModal');
+            renderOrders();
+        }
+    } catch (err) {
+        console.error('Error updateOrder', err);
+        alert('Gagal memperbarui order');
     }
 }
+
+
+
+
 
 // ===== Delete Order =====
 async function handleDeleteOrder(id) {
@@ -330,7 +386,7 @@ async function handleDeleteOrder(id) {
 // ===== Edit Order =====
 async function handleDetailOrder(id) {
     const order = await fetchOrderById(id);
-    if(!order) return alert('Order tidak ditemukan');
+    if (!order) return alert('Order tidak ditemukan');
 
     currentEditOrderId = id;
 
@@ -339,8 +395,22 @@ async function handleDetailOrder(id) {
     document.getElementById('detailStatus').value = order.status || '';
     document.getElementById('detailTotalPrice').value = order.total_price || '';
 
+    const container = document.getElementById('editOrderDetailsContainer');
+    container.innerHTML = '';
+
+    // 🔥 Ambil daftar service hanya sekali
+    const services = await fetchServices();
+
+    if (order.order_details && order.order_details.length > 0) {
+        for (const detail of order.order_details) {
+            addEditOrderDetailRow(detail, services);
+        }
+    }
+
     openModal('detailOrderModal');
 }
+
+
 function showNewCustomerForm() {
     document.getElementById('newCustomerContainer').classList.toggle('hidden');
 }
@@ -382,6 +452,103 @@ async function handleCreateCustomerFromOrder() {
         console.error('Error createCustomer', err);
         alert('Gagal menambahkan customer: ' + err.message);
     }
+}
+
+async function addEditOrderDetailRow(detail = null, services = null) {
+    const container = document.getElementById('editOrderDetailsContainer');
+    const index = ++editDetailCount;
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-center';
+    row.dataset.index = index;
+    if (detail?.id) row.dataset.id = detail.id;
+
+    // 🔥 Kalau services belum dikirim, fetch dulu
+    if (!services) {
+        services = await fetchServices();
+    }
+
+    row.innerHTML = `
+        <select id="editServiceId_${index}" class="border rounded px-2 py-1 w-1/2">
+            <option value="">Pilih Service</option>
+            ${services.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`).join('')}
+        </select>
+        <input id="editQuantity_${index}" type="number" min="1" value="${detail?.quantity ?? 1}" class="border rounded px-2 py-1 w-20 text-center" />
+        <input id="editSubtotal_${index}" type="number" min="0" value="${detail?.subtotal ?? 0}" class="border rounded px-2 py-1 w-32 text-right" readonly />
+        <button type="button" onclick="removeEditOrderDetailRow(${index})" class="text-red-500 hover:text-red-700">Hapus</button>
+    `;
+
+    container.appendChild(row);
+
+    const selectEl = document.getElementById(`editServiceId_${index}`);
+    if (detail?.service_id) selectEl.value = detail.service_id;
+
+    selectEl.addEventListener('change', () => updateEditSubtotal(index));
+    document.getElementById(`editQuantity_${index}`).addEventListener('input', () => updateEditSubtotal(index));
+
+    updateEditSubtotal(index);
+}
+
+
+// Hapus baris edit (tandai id lama untuk dihapus di backend)
+function removeEditOrderDetailRow(index) {
+    const row = document.querySelector(`#editOrderDetailsContainer [data-index="${index}"]`);
+    if (!row) return;
+
+    const detailId = row.dataset.id;
+    if (detailId) deletedDetailIds.push(detailId);
+
+    row.remove();
+    updateEditTotalPrice();
+}
+
+
+// // ===== Load dropdown layanan untuk EDIT =====
+// // ===== Load dropdown layanan untuk EDIT =====
+// async function loadEditServiceDropdown(selectId, selectedId = null) {
+//     const services = await fetchServices();
+//     const select = document.getElementById(selectId);
+//     select.innerHTML = '<option value="">Pilih Service</option>' +
+//         services.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`).join('');
+
+//     if (selectedId) select.value = selectedId;
+
+//     const index = selectId.split('_')[1];
+//     select.addEventListener('change', () => updateEditSubtotal(selectId));
+//     document.getElementById(`editQuantity_${index}`).addEventListener('input', () => updateEditSubtotal(selectId));
+
+//     updateEditSubtotal(selectId);
+// }
+
+
+// Update subtotal berdasarkan index (angka)
+function updateEditSubtotal(index) {
+    const serviceSelect = document.getElementById(`editServiceId_${index}`);
+    const quantityInput = document.getElementById(`editQuantity_${index}`);
+    const subtotalInput = document.getElementById(`editSubtotal_${index}`);
+
+    if (!serviceSelect || !quantityInput || !subtotalInput) return;
+
+    // safe parsing: fallback ke 0 bila undefined / tidak bisa di parse
+    const priceRaw = serviceSelect.selectedOptions[0]?.dataset?.price;
+    const price = Number.isFinite(Number(priceRaw)) ? parseInt(priceRaw, 10) : 0;
+    const quantity = Number.isFinite(Number(quantityInput.value)) ? parseInt(quantityInput.value, 10) : 0;
+
+    const subtotal = price * quantity;
+    subtotalInput.value = subtotal;
+
+    updateEditTotalPrice();
+}
+
+// Hitung total untuk container edit saja
+function updateEditTotalPrice() {
+    const container = document.getElementById('editOrderDetailsContainer');
+    const subtotals = container.querySelectorAll('[id^="editSubtotal_"]');
+    let total = 0;
+    subtotals.forEach(input => {
+        const v = parseInt(input.value || 0, 10);
+        total += Number.isFinite(v) ? v : 0;
+    });
+    document.getElementById('detailTotalPrice').value = total;
 }
 
 

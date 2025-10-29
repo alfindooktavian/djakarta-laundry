@@ -59,13 +59,21 @@ class OrderDetailController extends Controller
     }
 
     // Hapus order detail
-    public function destroy($id)
-    {
-        $orderDetail = OrderDetail::findOrFail($id);
-        $orderDetail->delete();
+    // Hapus order detail
+public function destroy($id)
+{
+    $orderDetail = OrderDetail::findOrFail($id);
+    $order = $orderDetail->order; // ambil order induknya
+    $orderDetail->delete();
 
-        return response()->json([
-            'message' => 'Order detail berhasil dihapus'
-        ]);
-    }
+    // Hitung ulang total harga order
+    $newTotal = $order->orderDetails()->sum('subtotal');
+    $order->update(['total_price' => $newTotal]);
+
+    return response()->json([
+        'message' => 'Order detail berhasil dihapus dan total diperbarui',
+        'new_total' => $newTotal
+    ]);
+}
+
 }
