@@ -71,11 +71,20 @@ class UserController extends Controller
     }
 
     // List semua user
-    public function index()
-    {
-        $users = User::all();
-        return response()->json($users);
+    // List semua user dengan pagination 5 per halaman
+    public function index(Request $request)
+{
+    if ($request->boolean('all')) {
+        $users = User::orderBy('id', 'desc')->get();
+    } else {
+        $users = User::orderBy('id', 'desc')->paginate(5);
     }
+
+    return response()->json($users);
+}
+
+
+    
 
     // Lihat detail user
     public function show($id)

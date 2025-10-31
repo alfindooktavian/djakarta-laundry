@@ -1,11 +1,16 @@
 const API_BASE = 'http://localhost:8000/api/orders'; // Sesuaikan dengan route API kamu
 
 // Ambil semua order
-export async function fetchOrders() {
+export async function fetchOrders(page = 1, all = false) {
     try {
         const token = localStorage.getItem('api_token');
 
-        const res = await fetch(API_BASE, {
+        // Tentukan URL berdasarkan apakah all = true atau tidak
+        const url = all 
+            ? `${API_BASE}?all=true`
+            : `${API_BASE}?page=${page}`;
+
+        const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json'
@@ -17,13 +22,36 @@ export async function fetchOrders() {
         }
 
         const data = await res.json();
-        console.log('Data orders:', data);
-        return data;
+        console.log('Data JSON fetchOrders:', data);
+
+        // Kalau all=true → data array langsung
+        if (all) {
+            return data;
+        }
+
+        // Kalau pakai pagination
+        return {
+            orders: data.data,
+            current_page: data.current_page,
+            last_page: data.last_page,
+            total: data.total,
+            per_page: data.per_page,
+        };
+
     } catch (err) {
         console.error('Error fetchOrders:', err);
-        return [];
+
+        // Return struktur default biar aman di frontend
+        return all ? [] : {
+            orders: [],
+            current_page: 1,
+            last_page: 1,
+            total: 0,
+            per_page: 5,
+        };
     }
 }
+
 
 // Ambil order berdasarkan ID
 export async function fetchOrderById(id) {

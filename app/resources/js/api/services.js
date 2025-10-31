@@ -1,12 +1,15 @@
 const API_BASE = 'http://localhost:8000/api/services'; // URL API Laravel
 
 // Ambil semua service
-export async function fetchServices() {
+export async function fetchServices(page = 1, all = false) {
     try {
         const token = localStorage.getItem('api_token');
         console.log('Token dari localStorage:', token);
 
-        const res = await fetch(API_BASE, {
+        // Jika all = true, kirim parameter ?all=true ke API
+        const url = all ? `${API_BASE}?all=true` : `${API_BASE}?page=${page}`;
+
+        const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -22,12 +25,31 @@ export async function fetchServices() {
         const data = await res.json();
         console.log('Data JSON fetchServices:', data);
 
-        return data; // Langsung array dari Service::all()
+        // Kalau pakai all=true, data langsung array
+        if (all) {
+            return data;
+        }
+
+        // Kalau pakai pagination (default)
+        return {
+            services: data.data,
+            current_page: data.current_page,
+            last_page: data.last_page,
+            total: data.total,
+            per_page: data.per_page,
+        };
     } catch (err) {
         console.error('Error fetchServices:', err);
-        return [];
+        return all ? [] : {
+            services: [],
+            current_page: 1,
+            last_page: 1,
+            total: 0,
+            per_page: 5,
+        };
     }
 }
+
 
 // Ambil service berdasarkan ID
 export async function fetchServiceById(id) {

@@ -26,6 +26,7 @@
         </table>
     </div>
 </div>
+<div id="paginationContainer" class="flex justify-end gap-2 mt-4"></div>
 
 <!-- Modal Tambah Customer -->
 <x-modal id="tambahCustomerModal" title="Tambah Customer">
@@ -50,7 +51,6 @@
     </x-slot>
 </x-modal>
 
-
 <!-- Modal Detail / Edit Customer -->
 <x-modal id="detailCustomerModal" title="Edit Customer">
     <div class="flex flex-col gap-2">
@@ -74,30 +74,70 @@
     </x-slot>
 </x-modal>
 
-
 @vite('resources/js/api/customers.js')
 
 <script>
 let currentEditCustomerId = null;
+let lastPage = 1;
 
-// Render semua data customer
-async function renderCustomers() {
+// === Pagination handler ===
+function renderPagination(currentPage, lastPage) {
+    const container = document.getElementById('paginationContainer');
+    let html = '';
+
+    // Tombol Previous
+    html += `<button onclick="gotoPage(${currentPage - 1})" 
+        class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage == 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+        &lt;
+    </button>`;
+
+    let start = Math.max(currentPage - 1, 1);
+    let end = Math.min(start + 2, lastPage);
+    start = Math.max(end - 2, 1);
+
+    for (let i = start; i <= end; i++) {
+        html += `<button onclick="gotoPage(${i})" 
+            class="px-3 py-1 border rounded ${i == currentPage ? 'bg-gray-800 text-white' : 'hover:bg-gray-200'}">${i}</button>`;
+    }
+
+    // Tombol Next
+    html += `<button onclick="gotoPage(${currentPage + 1})" 
+        class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage == lastPage ? 'opacity-50 cursor-not-allowed' : ''}">
+        &gt;
+    </button>`;
+
+    container.innerHTML = html;
+}
+
+function gotoPage(page) {
+    if (page < 1 || page > lastPage) return;
+    renderCustomers(page);
+}
+
+// === Render Customers ===
+async function renderCustomers(page = 1) {
     const tbody = document.getElementById('customerTableBody');
-    console.log('Render customers mulai...');
 
-    const customers = await fetchCustomers();
-    console.log('Data customer dari API:', customers);
+    // panggil fetchCustomers dengan urutan benar: (page, all)
+    const { customers, current_page, last_page } = await fetchCustomers(page, false);
+    lastPage = last_page;
 
     if (!customers.length) {
-        tbody.innerHTML = `<tr>
-            <td colspan="5" class="text-center py-4 text-gray-500">Belum ada data pelanggan.</td>
-        </tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-4 text-gray-500">
+                    Belum ada data pelanggan.
+                </td>
+            </tr>
+        `;
         return;
     }
 
     tbody.innerHTML = customers.map((customer, index) => `
         <tr class="hover:bg-gray-50 transition">
-            <td class="px-4 py-4 text-gray-700 border-b">${index + 1}</td>
+            <td class="px-4 py-4 text-gray-700 border-b">
+                ${(current_page - 1) * 5 + index + 1}
+            </td>
             <td class="px-4 py-4 text-gray-700 border-b">${customer.name}</td>
             <td class="px-4 py-4 text-gray-700 border-b">${customer.phone || '-'}</td>
             <td class="px-4 py-4 text-gray-700 border-b">${customer.address || '-'}</td>
@@ -106,31 +146,26 @@ async function renderCustomers() {
                     <button 
                         onclick="handleDetailCustomer(${customer.id})"
                         class="flex justify-center items-center rounded-lg text-white w-8 h-8
-               bg-gray-800 border border-gray-700 shadow-md hover:shadow-xl
-               transform hover:scale-110 transition-all duration-300"
-    >
-        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
-                       icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF">
-        </iconify-icon>
+                               bg-gray-800 border border-gray-700 shadow-md hover:shadow-xl
+                               transform hover:scale-110 transition-all duration-300">
+                        <iconify-icon icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
                     </button>
                     <button 
-    onclick="handleDeleteCustomer(${customer.id})"
-    class="flex justify-center items-center rounded-lg text-white w-8 h-8
-               bg-red-600 border border-red-800 shadow-md hover:shadow-xl
-               transform hover:scale-110 transition-all duration-300"
-    >
-        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
-                       icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF">
-        </iconify-icon>
-</button>
-
+                        onclick="handleDeleteCustomer(${customer.id})"
+                        class="flex justify-center items-center rounded-lg text-white w-8 h-8
+                               bg-red-600 border border-red-800 shadow-md hover:shadow-xl
+                               transform hover:scale-110 transition-all duration-300">
+                        <iconify-icon icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
+                    </button>
                 </div>
             </td>
         </tr>
     `).join('');
+
+    renderPagination(current_page, last_page);
 }
 
-// Tambah customer baru
+// === CRUD handler ===
 async function handleCreateCustomer() {
     const data = {
         name: document.getElementById('inputName').value,
@@ -139,28 +174,22 @@ async function handleCreateCustomer() {
     };
 
     const res = await createCustomer(data);
-    console.log('Hasil create customer:', res);
-    if(res){
+    if (res) {
         closeModal('tambahCustomerModal');
         renderCustomers();
     }
 }
 
-// Hapus customer
 async function handleDeleteCustomer(id) {
-    if(confirm('Yakin ingin menghapus customer ini?')){
+    if (confirm('Yakin ingin menghapus customer ini?')) {
         const res = await deleteCustomer(id);
-        console.log('Hasil delete customer:', res);
-        if(res){
-            renderCustomers();
-        }
+        if (res) renderCustomers();
     }
 }
 
-// Detail/Edit customer
 async function handleDetailCustomer(id) {
     const customer = await fetchCustomerById(id);
-    if(!customer) return alert('Customer tidak ditemukan');
+    if (!customer) return alert('Customer tidak ditemukan');
 
     currentEditCustomerId = id;
 
@@ -171,9 +200,8 @@ async function handleDetailCustomer(id) {
     openModal('detailCustomerModal');
 }
 
-// Update data customer
 async function handleUpdateCustomer() {
-    if(!currentEditCustomerId) return;
+    if (!currentEditCustomerId) return;
 
     const data = {
         name: document.getElementById('detailName').value,
@@ -182,9 +210,7 @@ async function handleUpdateCustomer() {
     };
 
     const res = await updateCustomer(currentEditCustomerId, data);
-    console.log('Hasil update customer:', res);
-
-    if(res){
+    if (res) {
         closeModal('detailCustomerModal');
         renderCustomers();
     }

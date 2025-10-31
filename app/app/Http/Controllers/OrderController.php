@@ -10,11 +10,22 @@ use Illuminate\Support\Facades\Auth;
 class OrderController extends Controller
 {
     // ✅ List semua order (termasuk payments)
-    public function index()
-    {
-        $orders = Order::with(['customer', 'user', 'orderDetails.service', 'payments'])->get();
-        return response()->json($orders);
+    public function index(Request $request)
+{
+    if ($request->boolean('all')) {
+        $orders = Order::with(['customer', 'user', 'orderDetails.service', 'payments'])
+            ->orderBy('id', 'desc')
+            ->get();
+    } else {
+        $orders = Order::with(['customer', 'user', 'orderDetails.service', 'payments'])
+            ->orderBy('id', 'desc')
+            ->paginate(5);
     }
+
+    return response()->json($orders);
+}
+
+
 
     // ✅ Detail order (termasuk payments)
     public function show($id)

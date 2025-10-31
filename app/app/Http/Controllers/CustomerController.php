@@ -7,11 +7,17 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index()
-    {
-        $customers = Customer::all();
-        return response()->json($customers);
+    public function index(Request $request)
+{
+    if ($request->boolean('all')) {
+        $customers = Customer::orderBy('id', 'desc')->get();
+    } else {
+        $customers = Customer::orderBy('id', 'desc')->paginate(5);
     }
+
+    return response()->json($customers);
+}
+
 
     public function show($id)
     {

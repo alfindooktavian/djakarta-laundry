@@ -1,29 +1,56 @@
 const API_BASE = 'http://localhost:8000/api/customers'; // Sesuaikan dengan route API kamu
 
 // Ambil semua customer
-export async function fetchCustomers() {
+export async function fetchCustomers(page = 1, all = false) {
     try {
         const token = localStorage.getItem('api_token');
+        console.log('Token dari localStorage:', token);
 
-        const res = await fetch(API_BASE, {
+        // Jika all = true, kirim parameter ?all=true ke API
+        const url = all ? `${API_BASE}?all=true` : `${API_BASE}?page=${page}`;
+
+        const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
+                'Content-Type': 'application/json',
             }
         });
+
+        console.log('Response fetchCustomers:', res);
 
         if (!res.ok) {
             throw new Error('Gagal mengambil data customers');
         }
 
         const data = await res.json();
-        console.log('Data customers:', data);
-        return data;
+        console.log('Data JSON fetchCustomers:', data);
+
+        // Kalau pakai all=true, data langsung array
+        if (all) {
+            return data;
+        }
+
+        // Kalau pakai pagination (default)
+        return {
+            customers: data.data,
+            current_page: data.current_page,
+            last_page: data.last_page,
+            total: data.total,
+            per_page: data.per_page,
+        };
     } catch (err) {
         console.error('Error fetchCustomers:', err);
-        return [];
+        return all ? [] : {
+            customers: [],
+            current_page: 1,
+            last_page: 1,
+            total: 0,
+            per_page: 5,
+        };
     }
 }
+
+
 
 // Ambil customer berdasarkan ID
 export async function fetchCustomerById(id) {

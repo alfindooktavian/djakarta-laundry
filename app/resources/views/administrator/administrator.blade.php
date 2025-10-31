@@ -27,6 +27,9 @@
         </table>
     </div>
 </div>
+<div id="paginationContainer" class="flex justify-end gap-2 mt-4"></div>
+
+
 
 <!-- Modal Tambah User -->
 {{-- Modal Tambah User --}}
@@ -103,58 +106,78 @@
 
 <script>
 let currentEditUserId = null;
+let lastPage = 1;
 
-async function renderUsers() {
+function renderPagination(currentPage, lastPage) {
+    const container = document.getElementById('paginationContainer');
+    let html = '';
+
+    // Tombol Previous
+    html += `<button onclick="gotoPage(${currentPage-1})" class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage==1?'opacity-50 cursor-not-allowed':''}">&lt;</button>`;
+
+    // Hitung range halaman
+    let start = Math.max(currentPage - 1, 1);
+    let end = Math.min(start + 2, lastPage);
+    start = Math.max(end - 2, 1);
+
+    // Tombol nomor halaman
+    for(let i=start; i<=end; i++){
+        html += `<button onclick="gotoPage(${i})" class="px-3 py-1 border rounded ${i==currentPage?'bg-gray-800 text-white':'hover:bg-gray-200'}">${i}</button>`;
+    }
+
+    // Tombol Next
+    html += `<button onclick="gotoPage(${currentPage+1})" class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage==lastPage?'opacity-50 cursor-not-allowed':''}">&gt;</button>`;
+
+    container.innerHTML = html;
+}
+
+
+
+// Pindah halaman
+function gotoPage(page) {
+    // Cegah pindah ke halaman < 1 atau > lastPage
+    if(page < 1 || page > lastPage) return;
+    renderUsers(page);
+}
+
+
+async function renderUsers(page = 1) {
     const tbody = document.getElementById('userTableBody');
-    console.log('Render users mulai...');
 
-    const users = await fetchUsers();
-    console.log('Data user dari API:', users);
+    const { users, current_page, last_page } = await fetchUsers(page);
+
+    lastPage = last_page;
 
     if (!users.length) {
         tbody.innerHTML = `<tr>
-            <td colspan="5" class="text-center py-4 text-gray-500">Belum ada data administrator.</td>
+            <td colspan="6" class="text-center py-4 text-gray-500">Belum ada data administrator.</td>
         </tr>`;
         return;
     }
 
     tbody.innerHTML = users.map((user, index) => `
         <tr class="hover:bg-gray-50 transition">
-            <td class="px-4 py-4 text-gray-700 border-b">${index + 1}</td>
+            <td class="px-4 py-4 text-gray-700 border-b">${(current_page - 1) * 5 + index + 1}</td>
             <td class="px-4 py-4 text-gray-700 border-b">${user.name}</td>
             <td class="px-4 py-4 text-gray-700 border-b">${user.email}</td>
             <td class="px-4 py-4 text-gray-700 border-b">${user.role}</td>
             <td class="px-4 py-4 text-gray-700 border-b">${user.status}</td>
             <td class="px-4 py-4 text-center border-b">
                 <div class="flex justify-center items-center gap-4">
-                    <!-- Tombol Detail / Edit -->
-                    <button 
-                        onclick="handleDetailUser(${user.id})"
-                        class="flex justify-center items-center rounded-lg text-white w-8 h-8
-               bg-gray-800 border border-gray-700 shadow-md hover:shadow-xl
-               transform hover:scale-110 transition-all duration-300"
-    >
-        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
-                       icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF">
-        </iconify-icon>
+                    <button onclick="handleDetailUser(${user.id})" class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-gray-800 border border-gray-700 shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300">
+                        <iconify-icon icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
                     </button>
-
-                    <!-- Tombol Hapus -->
-                    <button 
-    onclick="handleDeleteUser(${user.id})"
-    class="flex justify-center items-center rounded-lg text-white w-8 h-8
-               bg-red-600 border border-red-800 shadow-md hover:shadow-xl
-               transform hover:scale-110 transition-all duration-300"
-    >
-        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
-                       icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF">
-        </iconify-icon>
-</button>
+                    <button onclick="handleDeleteUser(${user.id})" class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-red-600 border border-red-800 shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300">
+                        <iconify-icon icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
+                    </button>
                 </div>
             </td>
         </tr>
     `).join('');
+
+    renderPagination(current_page, last_page);
 }
+
 
 async function handleCreateUser() {
     const data = {

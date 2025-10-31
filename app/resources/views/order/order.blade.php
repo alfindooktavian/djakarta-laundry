@@ -28,7 +28,7 @@
         </table>
     </div>
 </div>
-
+<div id="paginationContainer" class="flex justify-end gap-2 mt-4"></div>
 <!-- Modal Tambah Order -->
 <x-modal id="tambahOrderModal" title="Tambah Order">
     <div class="flex flex-col gap-2">
@@ -200,6 +200,7 @@ let orderDetailCount = 0;
 let deletedDetailIds = [];
 let editDetailCount = 0; 
 let currentPaymentId = null;
+let lastPage = 1;
 
 // ===== Tambah baris order detail =====
 function addOrderDetailRow() {
@@ -231,7 +232,9 @@ function removeOrderDetailRow(index) {
 
 // ===== Load dropdown layanan =====
 async function loadServiceDropdown(selectId) {
-    const services = await fetchServices();
+    // Ambil semua data tanpa pagination
+    const services = await fetchServices(1, true); 
+
     const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">Pilih Service</option>' +
         services.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`).join('');
@@ -239,6 +242,7 @@ async function loadServiceDropdown(selectId) {
     select.addEventListener('change', e => updateSubtotal(selectId));
     document.getElementById(`detailQuantity_${selectId.split('_')[1]}`).addEventListener('input', () => updateSubtotal(selectId));
 }
+
 
 // ===== Update subtotal =====
 function updateSubtotal(selectId) {
@@ -262,76 +266,92 @@ function calculateTotalPrice() {
 }
 
 // ===== Render semua order =====
-async function renderOrders() {
+async function renderOrders(page = 1) {
+    currentPage = page;
     const tbody = document.getElementById('orderTableBody');
-    const orders = await fetchOrders();
+    const { orders, current_page, last_page } = await fetchOrders(page, false); // fetchOrders perlu dikembalikan current_page + last_page
+    lastPage = last_page;
 
     if (!orders.length) {
         tbody.innerHTML = `<tr>
             <td colspan="7" class="text-center py-4 text-gray-500">Belum ada data order.</td>
         </tr>`;
+        renderPagination(current_page, last_page);
         return;
     }
 
     tbody.innerHTML = orders.map((order, index) => `
         <tr class="hover:bg-gray-50 transition">
-            <td class="px-4 py-4 border-b">${index + 1}</td>
+            <td class="px-4 py-4 border-b">${(current_page - 1) * 5 + index + 1}</td>
             <td class="px-4 py-4 border-b">${order.customer?.name || '-'}</td>
             <td class="px-4 py-4 border-b">${order.user?.name || '-'}</td>
             <td class="px-4 py-4 border-b">${order.order_at}</td>
             <td class="px-4 py-4 border-b">${order.status || '-'}</td>
             <td class="px-4 py-4 border-b text-right">Rp ${order.total_price?.toLocaleString() || '0'}</td>
             <td class="px-4 py-4 border-b text-center">
-            <div class="flex justify-center items-center gap-4">
-    <!-- Tombol Pembayaran -->
-    <button 
-        onclick="handlePayment(${order.id})"
-        class="flex justify-center items-center rounded-lg text-white px-2 h-8 
-               bg-gradient-to-r from-blue-500 to-blue-400 border border-green-700
-               shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300"
-    >
-        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
-                       icon="mdi:credit-card-outline" width="20" height="20" color="#FFFFFF">
-        </iconify-icon>
-    </button>
-
-    <!-- Tombol Detail -->
-    <button 
-        onclick="handleDetailOrder(${order.id})"
-        class="flex justify-center items-center rounded-lg text-white w-8 h-8
-               bg-gray-800 border border-gray-700 shadow-md hover:shadow-xl
-               transform hover:scale-110 transition-all duration-300"
-    >
-        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
-                       icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF">
-        </iconify-icon>
-    </button>
-
-    <!-- Tombol Hapus -->
-    <button 
-        onclick="handleDeleteOrder(${order.id})"
-        class="flex justify-center items-center rounded-lg text-white w-8 h-8
-               bg-red-600 border border-red-800 shadow-md hover:shadow-xl
-               transform hover:scale-110 transition-all duration-300"
-    >
-        <iconify-icon class="transition-transform transform hover:rotate-12 hover:scale-125" 
-                       icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF">
-        </iconify-icon>
-    </button>
-</div>
-
+                <div class="flex justify-center items-center gap-4">
+                    <button onclick="handlePayment(${order.id})" class="flex justify-center items-center rounded-lg text-white px-2 h-8 bg-gradient-to-r from-blue-500 to-blue-400 border shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300">
+                        <iconify-icon icon="mdi:credit-card-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
+                    </button>
+                    <button onclick="handleDetailOrder(${order.id})" class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-gray-800 border shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300">
+                        <iconify-icon icon="mdi:eye-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
+                    </button>
+                    <button onclick="handleDeleteOrder(${order.id})" class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-red-600 border shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300">
+                        <iconify-icon icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');
+
+    renderPagination(current_page, last_page);
+}
+
+// ===== Render Pagination =====
+function renderPagination(currentPage, lastPage) {
+    const container = document.getElementById('paginationContainer');
+    if (!container) return; // jika belum ada container, skip
+
+    let html = '';
+
+    // Previous
+    html += `<button onclick="gotoPage(${currentPage - 1})" class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">&lt;</button>`;
+
+    let start = Math.max(currentPage - 1, 1);
+    let end = Math.min(start + 2, lastPage);
+    start = Math.max(end - 2, 1);
+
+    for (let i = start; i <= end; i++) {
+        html += `<button onclick="gotoPage(${i})" class="px-3 py-1 border rounded ${i === currentPage ? 'bg-gray-800 text-white' : 'hover:bg-gray-200'}">${i}</button>`;
+    }
+
+    // Next
+    html += `<button onclick="gotoPage(${currentPage + 1})" class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage === lastPage ? 'opacity-50 cursor-not-allowed' : ''}">&gt;</button>`;
+
+    container.innerHTML = html;
+}
+
+function gotoPage(page) {
+    if (page < 1 || page > lastPage) return;
+    renderOrders(page);
 }
 
 
 // ===== Load dropdown data =====
 async function loadDropdownData() {
-    const customers = await fetchCustomers();
-    const customerOptions = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-    document.querySelectorAll('#inputCustomerId, #detailCustomerId').forEach(sel => sel.innerHTML = `<option value="">Pilih Customer</option>${customerOptions}`);
+    // Ambil semua customer
+    const data = await fetchCustomers(1, true); // all = true
+    const list = Array.isArray(data) ? data : (data?.data || []);
+
+    const customerOptions = list
+        .map(c => `<option value="${c.id}">${c.name}</option>`)
+        .join('');
+
+    document.querySelectorAll('#inputCustomerId, #detailCustomerId').forEach(sel => {
+        sel.innerHTML = `<option value="">Pilih Customer</option>${customerOptions}`;
+    });
 }
+
 
 // ===== CREATE ORDER + DETAIL =====
 async function handleCreateOrder() {
@@ -453,17 +473,18 @@ async function handleDetailOrder(id) {
     const container = document.getElementById('editOrderDetailsContainer');
     container.innerHTML = '';
 
-    // 🔥 Ambil daftar service hanya sekali
-    const services = await fetchServices();
+    // 🔥 Ambil semua daftar service untuk dropdown
+    const services = await fetchServices(1, true); // karena all = true, hasilnya array langsung
 
     if (order.order_details && order.order_details.length > 0) {
         for (const detail of order.order_details) {
-            addEditOrderDetailRow(detail, services);
+            await addEditOrderDetailRow(detail, services);
         }
     }
 
     openModal('detailOrderModal');
 }
+
 
 
 function showNewCustomerForm() {
@@ -517,9 +538,14 @@ async function addEditOrderDetailRow(detail = null, services = null) {
     row.dataset.index = index;
     if (detail?.id) row.dataset.id = detail.id;
 
-    // 🔥 Kalau services belum dikirim, fetch dulu
+    // 🔥 Kalau services belum dikirim, ambil semua service (tanpa pagination)
     if (!services) {
-        services = await fetchServices();
+        services = await fetchServices(1, true);
+    }
+
+    // 🔍 Pastikan kalau yang diterima bukan object pagination
+    if (services.services) {
+        services = services.services;
     }
 
     row.innerHTML = `
@@ -542,6 +568,7 @@ async function addEditOrderDetailRow(detail = null, services = null) {
 
     updateEditSubtotal(index);
 }
+
 
 
 // Hapus baris edit (tandai id lama untuk dihapus di backend)

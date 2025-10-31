@@ -8,11 +8,19 @@ use Illuminate\Http\Request;
 class ServiceController extends Controller
 {
     // Menampilkan semua service
-    public function index()
-    {
-        $services = Service::all();
-        return response()->json($services);
+    public function index(Request $request)
+{
+    if ($request->boolean('all')) {
+        $services = Service::orderBy('id', 'desc')->get();
+    } else {
+        $services = Service::orderBy('id', 'desc')->paginate(5);
     }
+
+    return response()->json($services);
+}
+
+
+
 
     // Menampilkan detail service
     public function show($id)
