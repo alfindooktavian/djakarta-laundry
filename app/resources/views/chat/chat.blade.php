@@ -1,92 +1,181 @@
 @extends('layouts.app')
 
-@section('title', 'WhatsApp Login')
+@section('title', 'Manajemen WhatsApp')
 
 @section('content')
-<div class="container text-center mt-5">
-    <h3 class="mb-3">Scan QR WhatsApp untuk Login</h3>
+<div class="container mx-auto py-6 space-y-6">
 
-    <div id="qr-container" class="d-flex justify-content-center mb-3">
-        <canvas id="qrcode" width="250" height="250" class="border rounded shadow-sm bg-light"></canvas>
+    <div class="flex justify-between items-center">
+        <div>
+            <h3 class="text-2xl font-semibold text-gray-800">Manajemen WhatsApp</h3>
+            <p class="text-gray-500 text-sm">Pantau koneksi gateway WhatsApp dan jumlah pesan yang terkirim.</p>
+        </div>
+<button id="refresh-qr-btn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-500 transition">
+    Reload Data
+</button>
+
     </div>
 
-    <p id="status" class="mt-3 text-muted">⏳ Memuat QR Code...</p>
+    <!-- Dua Card Horizontal -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- STATUS KONEKSI -->
+        <div class="p-6 rounded-lg shadow-sm bg-green-100 border border-green-200 text-center">
+            <h5 class="text-lg font-bold text-gray-800 mb-2">Status Koneksi</h5>
+            <p id="connection-status" class="font-semibold text-gray-700">Memeriksa koneksi...</p>
+        </div>
+
+        <!-- PESAN TERKIRIM -->
+        <div class="p-6 rounded-lg shadow-sm bg-blue-100 border border-blue-200 text-center">
+            <h5 class="text-lg font-bold text-gray-800 mb-2">Pesan Terkirim</h5>
+            <p id="message-count" class="font-semibold text-gray-700">0</p>
+        </div>
+    </div>
+
+    <!-- QR CODE SECTION -->
+    <div class="p-6 border-2 border-dashed border-gray-300 rounded-lg shadow-sm bg-white">
+        <div class="flex flex-col md:flex-row items-center md:items-start md:justify-between">
+            
+            <!-- QR di kiri -->
+            <div class="flex justify-center md:justify-start md:w-1/3 mb-4 md:mb-0">
+                <canvas id="qrcode" width="230" height="230" class="border rounded bg-gray-50 shadow-sm"></canvas>
+            </div>
+
+            <!-- Deskripsi di kanan -->
+            <div class="md:w-2/3 md:pl-6 text-center md:text-left">
+                <h5 class="text-lg font-bold text-gray-800 mb-2">QR Code Sesi WhatsApp</h5>
+                <p class="text-gray-600 text-sm mb-2">
+                    Pindai kode di samping menggunakan aplikasi <strong>WhatsApp</strong> Anda untuk menyambungkan perangkat.
+                </p>
+                <p class="text-gray-500 text-sm mb-4">
+                    Pastikan koneksi gateway Anda aktif saat memindai QR ini.<br>
+                    Setelah tersambung, klik tombol <strong>Reload Data</strong> untuk memperbarui status sesi.
+                </p>
+                <p id="qr-status" class="text-sm text-gray-500 italic mb-4">Memuat QR Code...</p>
+
+                <!-- tombol diganti -->
+                <button id="manual-refresh-btn" class="inline-flex items-center gap-2 px-4 py-2 border border-gray-700 text-gray-700 rounded-lg hover:bg-gray-700 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9M20 20v-5h-.581m-15.357-2a8.003 8.003 0 0115.356-2"/>
+                    </svg>
+                    Minta QR Baru
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
-    // Ambil secret dari backend (disuntik lewat Blade agar aman)
-    const SECRET_KEY = @json(env('WA_SECRET_KEY'));
+const SECRET_KEY = "{{ env('WA_SECRET_KEY') }}";
+const canvas = document.getElementById('qrcode');
+const qrStatus = document.getElementById('qr-status');
+const connectionStatus = document.getElementById('connection-status');
+const messageCount = document.getElementById('message-count');
 
-    const canvas = document.getElementById('qrcode');
-    const statusText = document.getElementById('status');
-    let lastQR = null;
-    let ready = false;
+let lastQR = null;
+let connected = false;
+let qrInterval = null;
 
-    async function loadQR() {
-        try {
-            const res = await fetch('/api/wa-qr', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-WA-SECRET': SECRET_KEY, // 🔥 wajib! untuk lolos dari validasi Laravel
-                }
-            });
+// Ambil data koneksi & pesan
+async function loadStatus() {
+    try {
+        const res = await fetch('/api/wa/status', { headers: { 'X-WA-SECRET': SECRET_KEY } });
+        const data = await res.json();
 
-            // Jika gagal ambil data
-            if (!res.ok) {
-                statusText.innerText = `⚠️ Gagal ambil QR (${res.status})`;
-                console.error('Response error:', res.status);
-                return;
-            }
+        connected = data.connected ?? false;
 
-            const data = await res.json();
-
-            // ✅ Jika sudah login (client WhatsApp siap)
-            if (data.ready) {
-                if (!ready) {
-                    ready = true;
-                    statusText.innerHTML = `<span class="text-success">✅ WhatsApp sudah terhubung!</span>`;
-                    clearCanvas();
-                }
-                return;
-            }
-
-            // ✅ Jika QR tersedia dan berbeda dari sebelumnya
-            if (data.qr && data.qr !== lastQR) {
-                lastQR = data.qr;
-                ready = false;
-                statusText.innerText = "📱 Silakan scan QR dengan aplikasi WhatsApp Anda";
-
-                clearCanvas();
-                QRCode.toCanvas(canvas, data.qr.trim(), (error) => {
-                    if (error) {
-                        console.error("QR Error:", error);
-                        statusText.innerText = "❌ Gagal generate QR";
-                    }
-                });
-            } 
-            // ⏳ Jika QR belum tersedia
-            else if (!data.qr && !ready) {
-                statusText.innerText = "⏳ QR belum tersedia, tunggu sebentar...";
-                clearCanvas();
-            }
-
-        } catch (error) {
-            console.error("Fetch Error:", error);
-            statusText.innerText = "⚠️ Tidak dapat terhubung ke server Laravel / WA Service";
+        if (connected) {
+            connectionStatus.textContent = 'Terhubung ke WhatsApp';
+            connectionStatus.className = 'font-semibold text-green-800';
+        } else {
+            connectionStatus.textContent = 'Terputus dari WhatsApp';
+            connectionStatus.className = 'font-semibold text-red-600';
         }
+    } catch {
+        connectionStatus.textContent = 'Gagal memeriksa koneksi.';
+        connectionStatus.className = 'font-semibold text-red-600';
     }
 
-    function clearCanvas() {
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Hitung pesan terkirim
+    try {
+        const countRes = await fetch('/api/wa/count', { headers: { 'X-WA-SECRET': SECRET_KEY } });
+        const countData = await countRes.json();
+        messageCount.textContent = countData.sent_messages ?? 0;
+    } catch {
+        messageCount.textContent = '0';
     }
+}
 
-    // Jalankan load pertama kali
-    loadQR();
+// Ambil QR
+async function loadQR() {
+    try {
+        const res = await fetch('/api/wa/qr', { headers: { 'X-WA-SECRET': SECRET_KEY } });
+        const data = await res.json();
 
-    // Cek QR setiap 3 detik
-    setInterval(loadQR, 3000);
+        connected = data.connected ?? false;
+
+        if (connected) {
+            clearCanvas();
+            qrStatus.textContent = 'WhatsApp sudah terhubung.';
+            if (qrInterval) clearInterval(qrInterval);
+            return;
+        }
+
+        // Kalau QR muncul berarti koneksi terputus
+        if (data.qr) {
+            connected = false;
+            connectionStatus.textContent = 'Terputus dari WhatsApp';
+            connectionStatus.className = 'font-semibold text-red-800';
+        }
+
+        if (data.qr && data.qr !== lastQR) {
+            lastQR = data.qr;
+            qrStatus.textContent = "Silakan scan QR dengan aplikasi WhatsApp Anda.";
+            clearCanvas();
+
+            if (data.qr.startsWith('data:image')) {
+                const ctx = canvas.getContext("2d");
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                img.src = data.qr;
+            } else {
+                QRCode.toCanvas(canvas, data.qr.trim(), (err) => {});
+            }
+        } else if (!data.qr && !connected) {
+            qrStatus.textContent = "QR belum tersedia, tunggu sebentar...";
+            clearCanvas();
+        }
+    } catch {
+        qrStatus.textContent = "Tidak dapat terhubung ke server WhatsApp.";
+    }
+}
+
+function clearCanvas() {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+async function refreshQR() {
+    try {
+        await fetch('/api/wa/qr', { headers: { 'X-WA-SECRET': SECRET_KEY } });
+        await loadQR();
+    } catch {
+        console.error('Gagal meminta QR baru');
+    }
+}
+
+document.getElementById('refresh-qr-btn').addEventListener('click', loadStatus);
+document.getElementById('manual-refresh-btn').addEventListener('click', refreshQR);
+
+// Load awal
+loadStatus();
+loadQR();
+
+// Auto-refresh setiap 30 detik
+qrInterval = setInterval(() => {
+    if (!connected) loadQR();
+    loadStatus();
+}, 30000);
 </script>
 @endsection

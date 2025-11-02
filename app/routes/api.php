@@ -66,8 +66,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/reports/pdf', [ReportController::class, 'exportPDF']);    
 });
 
-// Whatsapp Service
-Route::post('/send-wa', [WhatsAppController::class, 'send']);
-Route::post('/wa-qr', [WhatsAppController::class, 'receiveQR']);
-Route::get('/wa-qr', [WhatsAppController::class, 'getQR']);
-Route::get('/wa-status', [WhatsAppController::class, 'status']);
+// WhatsApp routes (public)
+Route::prefix('wa')->group(function () {
+    Route::get('/qr', [WhatsAppController::class, 'getQR']);
+    Route::post('/receive-qr', [WhatsAppController::class, 'receiveQR']);
+    Route::get('/status', [WhatsAppController::class, 'status']);
+    Route::post('/send', [WhatsAppController::class, 'send']);
+});

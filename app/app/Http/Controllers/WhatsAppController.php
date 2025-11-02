@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class WhatsAppController extends Controller
 {
-    protected $waServiceUrl;
-    protected $secretKey;
+    protected string $waServiceUrl;
+    protected string $secretKey;
 
     public function __construct()
     {
@@ -17,21 +18,14 @@ class WhatsAppController extends Controller
         $this->secretKey = env('WA_SECRET_KEY', 'defaultsecret');
     }
 
-    /**
-     * Validasi secret key di header / body.
-     */
-    protected function checkSecret(Request $request)
+    protected function checkSecret(Request $request): void
     {
         $secret = $request->header('X-WA-SECRET') ?? $request->input('secret');
-
         if ($secret !== $this->secretKey) {
             abort(response()->json(['error' => 'Unauthorized'], 401));
         }
     }
 
-    /**
-     * Kirim pesan ke WA Service.
-     */
     public function send(Request $request)
     {
         $this->checkSecret($request);
@@ -42,79 +36,87 @@ class WhatsAppController extends Controller
         ]);
 
         try {
-            $response = Http::post("{$this->waServiceUrl}/api/send-message", [
-                'number' => $validated['number'],
+            $response = Http::asJson()->post("{$this->waServiceUrl}/send", [
+                'to' => $validated['number'],
                 'message' => $validated['message'],
+                'secret' => $this->secretKey,
             ]);
 
             return $response->json();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('WA Send Error: ' . $e->getMessage());
+
             return response()->json([
-                'error' => 'Gagal mengirim pesan ke server WhatsApp',
+                'success' => false,
+                'error' => 'Tidak dapat terhubung ke WA Service',
                 'details' => $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Node.js mengirim QR ke Laravel.
-     */
     public function receiveQR(Request $request)
     {
         $this->checkSecret($request);
 
-        $request->validate([
-            'qr' => 'required|string',
-        ]);
-
+        $request->validate(['qr' => 'required|string']);
         Cache::put('wa-qr', $request->qr, now()->addMinutes(2));
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'QR diterima dan disimpan di cache',
+        ]);
     }
 
-    /**
-     * Frontend ambil QR dan status dari Laravel.
-     */
     public function getQR(Request $request)
     {
         $this->checkSecret($request);
 
         $qr = Cache::get('wa-qr');
-        $status = ['ready' => false, 'connected' => false];
+        $connected = false;
+        $message = null;
 
         try {
-            $response = Http::get("{$this->waServiceUrl}/api/status");
+            $response = Http::get("{$this->waServiceUrl}/status");
             if ($response->ok()) {
                 $status = $response->json();
+                $connected = $status['connected'] ?? false;
+                $message = $status['message'] ?? null;
             }
-        } catch (\Exception $e) {
-            $status['error'] = 'Tidak dapat terhubung ke WA Service';
+        } catch (\Throwable $e) {
+            $message = 'Tidak dapat terhubung ke WA Service';
         }
 
         return response()->json([
+            'success' => true,
+            'connected' => $connected,
             'qr' => $qr,
-            'ready' => $status['ready'] ?? false,
-            'connected' => $status['connected'] ?? false,
-            'number' => $status['number'] ?? null,
+            'message' => $message,
         ]);
     }
 
-    /**
-     * Ambil status WhatsApp (langsung dari WA Service).
-     */
     public function status(Request $request)
     {
         $this->checkSecret($request);
 
         try {
-            $response = Http::get("{$this->waServiceUrl}/api/status");
-            return $response->json();
-        } catch (\Exception $e) {
+            $response = Http::get("{$this->waServiceUrl}/status");
+
+            if ($response->ok()) {
+                return $response->json();
+            }
+
             return response()->json([
-                'ready' => false,
+                'success' => false,
+                'connected' => false,
+                'error' => 'WA Service tidak merespons',
+            ], $response->status());
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
                 'connected' => false,
                 'error' => 'Tidak dapat terhubung ke WA Service',
-            ]);
+                'details' => $e->getMessage(),
+            ], 500);
         }
     }
 }

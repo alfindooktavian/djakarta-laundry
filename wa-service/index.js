@@ -1,126 +1,151 @@
-// index.js
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express'
+import pino from 'pino'
+import qrcode from 'qrcode'
+import cors from 'cors'
+import bodyParser from 'body-parser'
+import dotenv from 'dotenv'
+import { Boom } from '@hapi/boom'
+import makeWASocket, {
+  useMultiFileAuthState,
+  Browsers,
+  DisconnectReason
+} from '@whiskeysockets/baileys'
+import fs from 'fs'
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+dotenv.config()
 
-// simpan auth
-const client = new Client({
-    authStrategy: new LocalAuth(), 
-    puppeteer: {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    },
-});
+const app = express()
+app.use(cors())
+app.use(bodyParser.json())
 
-let lastSentTime = 0;
-let currentQR = null;
-let isReady = false;
+const PORT = process.env.PORT || 3000
+const SECRET_KEY = process.env.WA_SECRET_KEY || 'defaultsecret'
+const LARAVEL_URL = process.env.LARAVEL_URL || ''
+const BROWSER_NAME = process.env.BROWSER_NAME || 'Chrome'
 
+let sock
+let qrCodeData = null
+let isConnected = false
+let reconnecting = false
 
-// Saat QR muncul 
-client.on('qr', (qr) => {
-    currentQR = qr;
-    const now = Date.now();
+async function startSock() {
+  const { state, saveCreds } = await useMultiFileAuthState('auth')
 
-    if (now - lastSentTime > 120000) { // interval 2m
-        lastSentTime = now;
-        console.log('QR RECEIVED (sending to Laravel)...');
+  sock = makeWASocket({
+    auth: state,
+    logger: pino({ level: 'silent' }),
+    browser: Browsers.macOS(BROWSER_NAME),
+    markOnlineOnConnect: false,
+    syncFullHistory: false,
+    getMessage: async () => ({})
+  })
 
-        axios.post(`${process.env.LARAVEL_URL}/api/wa-qr`, { 
-            qr, 
-            secret: process.env.WA_SECRET_KEY 
-        })
-        .then(() => console.log('QR sent to Laravel'))
-        .catch(err => console.error('Error sending QR:', err.message));
-    } else {
-        console.log('QR diterima tapi di-skip (masih dalam interval 2 menit)');
+  sock.ev.on('creds.update', saveCreds)
+
+  sock.ev.on('connection.update', async (update) => {
+    const { connection, qr, lastDisconnect } = update
+
+    if (qr) {
+      qrCodeData = await qrcode.toDataURL(qr)
+
+      if (LARAVEL_URL) {
+        try {
+          await fetch(`${LARAVEL_URL}/api/wa/receive-qr`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-WA-SECRET': SECRET_KEY
+            },
+            body: JSON.stringify({ qr: qrCodeData })
+          })
+        } catch {}
+      }
     }
-});
 
-// Saat sudah login & siap
-client.on('ready', () => {
-    isReady = true;
-    console.log('WhatsApp Client Ready!');
-});
-
-// Saat autentikasi berhasil
-client.on('authenticated', () => {
-    console.log('WhatsApp authenticated (session tersimpan)');
-});
-
-// Saat koneksi putus
-client.on('disconnected', (reason) => {
-    isReady = false;
-    console.log(`WhatsApp Disconnected (${reason}), mencoba reconnect dalam 5 detik...`);
-    setTimeout(() => client.initialize(), 5000);
-});
-
-
-// API Routes
-
-// Kirim pesan WhatsApp
-app.post('/api/send-message', async (req, res) => {
-    try {
-        const { number, message } = req.body;
-
-        if (!number || !message) {
-            return res.status(400).json({ success: false, error: "Number dan message wajib diisi" });
-        }
-
-        if (!isReady) {
-            return res.status(503).json({ success: false, error: "WhatsApp belum siap" });
-        }
-
-        const chatId = number.includes('@c.us') ? number : `${number}@c.us`;
-        const response = await client.sendMessage(chatId, message);
-
-        console.log(`Pesan terkirim ke ${number}: ${message}`);
-
-        res.json({
-            success: true,
-            to: number,
-            message: message,
-            messageId: response.id.id,
-        });
-    } catch (err) {
-        console.error("Gagal kirim pesan:", err);
-        res.status(500).json({ success: false, error: err.message });
+    if (connection === 'open') {
+      isConnected = true
+      reconnecting = false
+      qrCodeData = null
     }
-});
 
-//Ambil QR terbaru 
-app.get('/api/qr', (req, res) => {
-    res.json({
-        ready: isReady,
-        qr: currentQR,
-    });
-});
+    if (connection === 'close') {
+      isConnected = false
+      const reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 
-// Cek status koneksi WhatsApp
-app.get('/api/status', (req, res) => {
-    res.json({
-        ready: isReady,
-        connected: !!client.info,
-        number: client.info ? client.info.wid.user : null,
-    });
-});
+      switch (reason) {
+        case DisconnectReason.badSession:
+          fs.rmSync('./auth', { recursive: true, force: true })
+          return startSock()
+        case DisconnectReason.connectionClosed:
+        case DisconnectReason.connectionLost:
+        case DisconnectReason.restartRequired:
+          return reconnect()
+        case DisconnectReason.loggedOut:
+          fs.rmSync('./auth', { recursive: true, force: true })
+          return startSock()
+        default:
+          reconnect()
+      }
+    }
+  })
+}
 
-// Inisialisasi Client
-client.initialize();
+function reconnect() {
+  if (!reconnecting) {
+    reconnecting = true
+    setTimeout(() => {
+      reconnecting = false
+      startSock()
+    }, 5000)
+  }
+}
 
-// status
-const PORT = process.env.PORT || 3000;
+startSock()
+
+app.get('/qr', (req, res) => {
+  res.json({
+    success: true,
+    connected: isConnected,
+    qr: qrCodeData,
+    message: qrCodeData ? 'QR tersedia, silakan scan.' : 'Sudah login atau QR belum dibuat.'
+  })
+})
+
+app.get('/refresh', async (req, res) => {
+  try {
+    if (fs.existsSync('./auth')) {
+      fs.rmSync('./auth', { recursive: true, force: true })
+    }
+    await startSock()
+    res.json({ success: true, message: 'QR baru dibuat.' })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+app.get('/status', (req, res) => {
+  res.json({
+    success: true,
+    connected: isConnected
+  })
+})
+
+app.post('/send', async (req, res) => {
+  const { to, message, secret } = req.body
+  try {
+    if (secret !== SECRET_KEY) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' })
+    }
+
+    if (!isConnected) throw new Error('Belum terkoneksi ke WhatsApp')
+
+    await sock.sendMessage(`${to}@s.whatsapp.net`, { text: message })
+    res.json({ success: true, to, message })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
 app.listen(PORT, () => {
-    console.log(`WA Service running on http://localhost:${PORT}`);
-});
-
-// eror umum
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection:', reason);
-});
+  console.log(`WA Service running on port ${PORT}`)
+})
