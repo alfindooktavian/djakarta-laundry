@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Events\OrderCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -74,6 +75,8 @@ class OrderController extends Controller
             'status'   => 'unpaid',
             'paid_at'  => null,
         ]);
+
+        event(new OrderCreated($order));
 
         return response()->json([
             'message' => 'Order, detail, dan payment berhasil dibuat',
