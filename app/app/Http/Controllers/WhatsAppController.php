@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class WhatsAppController extends Controller
 {
@@ -18,6 +17,9 @@ class WhatsAppController extends Controller
         $this->secretKey = env('WA_SECRET_KEY', 'defaultsecret');
     }
 
+    /**
+     * Validasi secret agar API tidak bisa diakses publik.
+     */
     protected function checkSecret(Request $request): void
     {
         $secret = $request->header('X-WA-SECRET') ?? $request->input('secret');
@@ -26,34 +28,9 @@ class WhatsAppController extends Controller
         }
     }
 
-    public function send(Request $request)
-    {
-        $this->checkSecret($request);
-
-        $validated = $request->validate([
-            'number' => 'required|string',
-            'message' => 'required|string',
-        ]);
-
-        try {
-            $response = Http::asJson()->post("{$this->waServiceUrl}/send", [
-                'to' => $validated['number'],
-                'message' => $validated['message'],
-                'secret' => $this->secretKey,
-            ]);
-
-            return $response->json();
-        } catch (\Throwable $e) {
-            Log::error('WA Send Error: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'error' => 'Tidak dapat terhubung ke WA Service',
-                'details' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
+    /**
+     * Menerima QR code dari service Node.js (disimpan sementara di cache)
+     */
     public function receiveQR(Request $request)
     {
         $this->checkSecret($request);
@@ -67,6 +44,9 @@ class WhatsAppController extends Controller
         ]);
     }
 
+    /**
+     * Mengambil QR code terakhir dan status koneksi WhatsApp.
+     */
     public function getQR(Request $request)
     {
         $this->checkSecret($request);
@@ -76,14 +56,14 @@ class WhatsAppController extends Controller
         $message = null;
 
         try {
-            $response = Http::get("{$this->waServiceUrl}/status");
+            $response = Http::timeout(5)->get("{$this->waServiceUrl}/status");
             if ($response->ok()) {
                 $status = $response->json();
                 $connected = $status['connected'] ?? false;
                 $message = $status['message'] ?? null;
             }
         } catch (\Throwable $e) {
-            $message = 'Tidak dapat terhubung ke WA Service';
+            $message = 'Tidak dapat terhubung ke WhatsApp Service';
         }
 
         return response()->json([
@@ -94,15 +74,31 @@ class WhatsAppController extends Controller
         ]);
     }
 
+    /**
+     * Mengecek status koneksi WhatsApp Gateway.
+     */
     public function status(Request $request)
     {
         $this->checkSecret($request);
 
         try {
-            $response = Http::get("{$this->waServiceUrl}/status");
+            $response = Http::timeout(5)->get("{$this->waServiceUrl}/status");
 
             if ($response->ok()) {
-                return $response->json();
+                $status = $response->json();
+                $connected = $status['connected'] ?? false;
+
+                // Jika gateway terputus, reset counter otomatis
+                if (!$connected) {
+                    $todayKey = 'wa_sent_messages_' . now()->format('Y-m-d');
+                    Cache::forget($todayKey);
+                    Cache::forget('wa_sent_messages_last');
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'connected' => $connected,
+                ]);
             }
 
             return response()->json([
@@ -111,12 +107,36 @@ class WhatsAppController extends Controller
                 'error' => 'WA Service tidak merespons',
             ], $response->status());
         } catch (\Throwable $e) {
+            // Reset counter juga kalau tidak bisa konek ke service
+            $todayKey = 'wa_sent_messages_' . now()->format('Y-m-d');
+            Cache::forget($todayKey);
+            Cache::forget('wa_sent_messages_last');
+
             return response()->json([
                 'success' => false,
                 'connected' => false,
                 'error' => 'Tidak dapat terhubung ke WA Service',
-                'details' => $e->getMessage(),
             ], 500);
         }
+    }
+
+
+    /**
+     * Mengambil jumlah pesan terkirim hari ini.
+     */
+    public function count(Request $request)
+    {
+        $this->checkSecret($request);
+
+        $todayKey = 'wa_sent_messages_' . now()->format('Y-m-d');
+        $count = Cache::get($todayKey, 0);
+        $lastSent = Cache::get('wa_sent_messages_last');
+
+        return response()->json([
+            'success' => true,
+            'date' => now()->format('d/m/Y'),
+            'sent_messages' => $count,
+            'last_message_at' => $lastSent,
+        ]);
     }
 }

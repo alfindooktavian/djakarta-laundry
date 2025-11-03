@@ -68,8 +68,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // WhatsApp routes (public)
 Route::prefix('wa')->group(function () {
+    Route::get('/status', [WhatsAppController::class, 'status']);
     Route::get('/qr', [WhatsAppController::class, 'getQR']);
     Route::post('/receive-qr', [WhatsAppController::class, 'receiveQR']);
-    Route::get('/status', [WhatsAppController::class, 'status']);
-    Route::post('/send', [WhatsAppController::class, 'send']);
+    Route::get('/count', [WhatsAppController::class, 'count']);
 });
