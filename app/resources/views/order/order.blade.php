@@ -57,10 +57,10 @@
         </div>
 
         <!-- Tanggal Order -->
-        <div>
+        <!-- <div>
             <label class="text-gray-700">Tanggal Order</label>
             <input id="inputOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
-        </div>
+        </div> -->
 
         <!-- Status -->
         <div>
