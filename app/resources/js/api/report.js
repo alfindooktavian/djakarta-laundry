@@ -1,22 +1,20 @@
-const API_BASE = 'http://localhost:8000/api/reports';
+// resources/js/api/reports.js
 
-/**
- * Ambil semua laporan transaksi
- */
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/reports`;
+
 export async function fetchReports() {
     try {
         const token = localStorage.getItem('api_token');
         const res = await fetch(API_BASE, {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+            },
         });
 
         if (!res.ok) throw new Error(`Gagal mengambil data laporan (${res.status})`);
-        const result = await res.json();
-        console.log('Data laporan transaksi:', result);
 
+        const result = await res.json();
         return Array.isArray(result) ? result : result.data ?? [];
     } catch (err) {
         console.error('Error fetchReports:', err);
@@ -24,20 +22,17 @@ export async function fetchReports() {
     }
 }
 
-/**
- * Download laporan dalam format PDF
- */
 export async function downloadReport(type = 'pdf', params = '') {
-    const token = localStorage.getItem('api_token');
-    const url = `${API_BASE}/${type}?${params}`;
-
     try {
+        const token = localStorage.getItem('api_token');
+        const url = `${API_BASE}/${type}?${params}`;
+
         const res = await fetch(url, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/pdf'
-            }
+                'Accept': 'application/pdf',
+            },
         });
 
         if (!res.ok) {
@@ -59,11 +54,10 @@ export async function downloadReport(type = 'pdf', params = '') {
 
         setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
     } catch (err) {
-        console.error('Error downloadReport (pdf):', err);
+        console.error('Error downloadReport:', err);
         alert(`Gagal download PDF: ${err.message}`);
     }
 }
 
-// Biar bisa dipanggil langsung dari Blade
 window.fetchReports = fetchReports;
 window.downloadReport = downloadReport;

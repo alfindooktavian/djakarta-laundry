@@ -1,72 +1,56 @@
-const API_BASE = 'http://localhost:8000/api/orders'; // Sesuaikan dengan route API kamu
+// resources/js/api/orders.js
 
-// Ambil semua order
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/orders`;
+
 export async function fetchOrders(page = 1, all = false) {
     try {
         const token = localStorage.getItem('api_token');
-
-        // Tentukan URL berdasarkan apakah all = true atau tidak
-        const url = all 
-            ? `${API_BASE}?all=true`
-            : `${API_BASE}?page=${page}`;
+        const url = all ? `${API_BASE}?all=true` : `${API_BASE}?page=${page}`;
 
         const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+            },
         });
 
-        if (!res.ok) {
-            throw new Error('Gagal mengambil data orders');
-        }
+        if (!res.ok) throw new Error('Gagal mengambil data orders');
 
         const data = await res.json();
-        console.log('Data JSON fetchOrders:', data);
-
-        // Kalau all=true → data array langsung
-        if (all) {
-            return data;
-        }
-
-        // Kalau pakai pagination
-        return {
-            orders: data.data,
-            current_page: data.current_page,
-            last_page: data.last_page,
-            total: data.total,
-            per_page: data.per_page,
-        };
-
+        return all
+            ? data
+            : {
+                  orders: data.data,
+                  current_page: data.current_page,
+                  last_page: data.last_page,
+                  total: data.total,
+                  per_page: data.per_page,
+              };
     } catch (err) {
         console.error('Error fetchOrders:', err);
-
-        // Return struktur default biar aman di frontend
-        return all ? [] : {
-            orders: [],
-            current_page: 1,
-            last_page: 1,
-            total: 0,
-            per_page: 5,
-        };
+        return all
+            ? []
+            : {
+                  orders: [],
+                  current_page: 1,
+                  last_page: 1,
+                  total: 0,
+                  per_page: 5,
+              };
     }
 }
 
-
-// Ambil order berdasarkan ID
 export async function fetchOrderById(id) {
     try {
         const token = localStorage.getItem('api_token');
-
         const res = await fetch(`${API_BASE}/${id}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+            },
         });
 
         if (!res.ok) throw new Error('Order tidak ditemukan');
-
         return await res.json();
     } catch (err) {
         console.error('Error fetchOrderById:', err);
@@ -74,19 +58,17 @@ export async function fetchOrderById(id) {
     }
 }
 
-// Tambah order baru
 export async function createOrder(data) {
     try {
         const token = localStorage.getItem('api_token');
-
         const res = await fetch(API_BASE, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
         });
 
         if (!res.ok) {
@@ -101,19 +83,17 @@ export async function createOrder(data) {
     }
 }
 
-// Update data order
 export async function updateOrder(id, data) {
     try {
         const token = localStorage.getItem('api_token');
-
         const res = await fetch(`${API_BASE}/${id}`, {
-            method: 'PATCH', // Laravel biasanya pakai PATCH
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
+                'Accept': 'application/json',
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
         });
 
         if (!res.ok) {
@@ -128,17 +108,15 @@ export async function updateOrder(id, data) {
     }
 }
 
-// Hapus order
 export async function deleteOrder(id) {
     try {
         const token = localStorage.getItem('api_token');
-
         const res = await fetch(`${API_BASE}/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
+                'Accept': 'application/json',
+            },
         });
 
         if (!res.ok) {
@@ -153,7 +131,6 @@ export async function deleteOrder(id) {
     }
 }
 
-// ==== Expose ke global supaya bisa dipanggil dari Blade ====
 window.fetchOrders = fetchOrders;
 window.fetchOrderById = fetchOrderById;
 window.createOrder = createOrder;

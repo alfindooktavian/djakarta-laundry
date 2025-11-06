@@ -1,4 +1,6 @@
-const API_BASE = 'http://localhost:8000/api'; 
+// resources/js/api/auth.js
+
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL}`;
 
 // Login user
 export async function loginUser(email, password) {
@@ -6,11 +8,10 @@ export async function loginUser(email, password) {
         const res = await fetch(`${API_BASE}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email, password }),
         });
 
         const data = await res.json();
-        console.log('Response login:', data);
 
         if (!res.ok) {
             throw new Error(data.message || 'Login gagal');
@@ -33,23 +34,18 @@ export async function logoutUser() {
 
     try {
         if (token) {
-            const res = await fetch(`${API_BASE}/logout`, {
+            await fetch(`${API_BASE}/logout`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                },
             });
-
-            const data = await res.json();
-            console.log('Response logout:', data);
-        } else {
-            console.warn('Token tidak ditemukan, langsung logout lokal.');
         }
     } catch (err) {
         console.error('Error logoutUser:', err);
     } finally {
-        // 🔥 SELALU hapus data localStorage, apapun hasilnya
+        // Selalu hapus data localStorage meski request gagal
         localStorage.removeItem('api_token');
         localStorage.removeItem('user');
     }
@@ -57,6 +53,5 @@ export async function logoutUser() {
     return { message: 'Logout berhasil' };
 }
 
-// Expose ke global supaya bisa dipanggil di Blade
 window.loginUser = loginUser;
 window.logoutUser = logoutUser;
