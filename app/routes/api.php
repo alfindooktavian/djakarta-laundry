@@ -9,6 +9,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\WhatsAppController;
 use App\Http\Controllers\OrderDetailController;
+use App\Http\Controllers\DashboardController;
 
 // Public routes
 Route::post('/register', [UserController::class, 'store']);
@@ -17,7 +18,7 @@ Route::post('/login', [UserController::class, 'login']);
 // Protected routes (Sanctum token)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
-
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     
         Route::get('/users', [UserController::class, 'index']);
         Route::get('/users/{id}', [UserController::class, 'show']);

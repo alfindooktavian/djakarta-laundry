@@ -40,7 +40,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'order_at'    => 'required|date',
+            // 'order_at'    => 'required|date',
             'status'      => 'sometimes|in:diterima,diproses,selesai,diambil',
             'details'     => 'required|array|min:1',
             'details.*.service_id' => 'required|exists:services,id',
@@ -57,7 +57,7 @@ class OrderController extends Controller
         $order = Order::create([
             'customer_id' => $validated['customer_id'],
             'user_id'     => $userId,
-            'order_at'    => $validated['order_at'],
+            'order_at'    => now(),
             'status'      => $validated['status'] ?? 'diterima',
             'total_price' => $totalPrice,
         ]);
