@@ -378,7 +378,7 @@ async function handleCreateOrder() {
     const data = {
         customer_id: document.getElementById('inputCustomerId').value,
         user_id: userId,
-        order_at: document.getElementById('inputOrderAt').value,
+        // order_at: document.getElementById('inputOrderAt').value,
         status: document.getElementById('inputStatus').value,
         total_price: totalPrice,
         details: details // <-- kirim semua detail di sini
