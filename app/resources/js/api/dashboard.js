@@ -1,7 +1,7 @@
-const API_BASE = 'http://localhost:8000/api/dashboard';
+// Gunakan environment variable dari .env
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/dashboard`;
 
-// Ambil data ringkasan dashboard dan data chart
-export async function fetchDashboard(selectedYear = null) {  
+export async function fetchDashboard(selectedYear = null) {
     try {
         const token = localStorage.getItem('api_token');
         const url = selectedYear ? `${API_BASE}?year=${selectedYear}` : API_BASE;
@@ -11,7 +11,7 @@ export async function fetchDashboard(selectedYear = null) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-            }
+            },
         });
 
         if (!res.ok) {
@@ -30,8 +30,8 @@ export async function fetchDashboard(selectedYear = null) {
             orders_per_year: data.orders_per_year || [],
             customers_per_year: data.customers_per_year || [],
             services_per_year: data.services_per_year || [],
-            income_per_month: data.income_per_month || {},   
-            income_per_year: data.income_per_year || [],    
+            income_per_month: data.income_per_month || {},
+            income_per_year: data.income_per_year || [],
         };
     } catch (err) {
         console.error('Error fetchDashboard:', err);
@@ -44,8 +44,8 @@ export async function fetchDashboard(selectedYear = null) {
             orders_per_year: [],
             customers_per_year: [],
             services_per_year: [],
-            income_per_month: {},   
-            income_per_year: [],    
+            income_per_month: {},
+            income_per_year: [],
         };
     }
 }
