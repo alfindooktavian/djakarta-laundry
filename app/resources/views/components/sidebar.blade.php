@@ -1,76 +1,80 @@
+<!-- Sidebar -->
 <div id="sidebar"
-    class="flex flex-col justify-between h-screen sticky top-0 bg-white z-50 shadow-md transition-all duration-300 ease-in-out">
+  class="fixed top-0 left-0 z-50 h-full bg-white border-r border-gray-200 flex flex-col w-20 lg:w-64 transition-all duration-300">
 
-    <!-- Bagian atas: Logo & navigasi -->
-    <div>
-        <!-- Logo -->
-        <div class="text-2xl font-bold mt-6 mb-6 flex items-center justify-center md:justify-start px-2 md:px-4">
-            <span id="sidebarLogo">🧺 Djakarta Laundry</span>
+  <!-- Header -->
+  <header class="p-4 flex items-center justify-center lg:justify-start border-b border-gray-200">
+    <a href="{{ route('dashboard') }}" class="flex items-center gap-x-2">
+      <!-- Logo Text (responsive) -->
+      <span class="block lg:hidden text-xl font-bold text-gray-800">DL</span>
+      <span class="hidden lg:block font-semibold text-lg text-gray-800">Djakarta Laundry</span>
+    </a>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto py-4 px-2 lg:px-3 text-sm text-gray-800 space-y-1">
+    @php
+        $menu = [
+            ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'mdi:home-outline'],
+            ['name' => 'Administrator', 'route' => 'administrator', 'icon' => 'mdi:account-circle-outline'],
+            ['name' => 'Layanan', 'route' => 'service', 'icon' => 'mdi:cog-outline'],
+            ['name' => 'Pelanggan', 'route' => 'customer', 'icon' => 'mdi:account-group-outline'],
+            ['name' => 'Transaksi', 'route' => 'order', 'icon' => 'mdi:cart-outline'],
+            ['name' => 'WhatsApp', 'route' => 'chat', 'icon' => 'mdi:message-outline'],
+            ['name' => 'Laporan', 'route' => 'report', 'icon' => 'mdi:file-chart-outline'],
+        ];
+        $currentRoute = Route::currentRouteName();
+    @endphp
+
+    @foreach ($menu as $item)
+      <a href="{{ route($item['route']) }}"
+         class="group relative flex items-center gap-x-3.5 py-2 px-2.5 rounded-lg transition w-full
+                {{ $currentRoute === $item['route'] ? 'bg-blue-50 text-blue-600 font-medium' : 'hover:bg-blue-50 hover:text-blue-600' }}">
+        <iconify-icon icon="{{ $item['icon'] }}" width="20" height="20"></iconify-icon>
+        <span class="hidden lg:inline">{{ $item['name'] }}</span>
+
+        <!-- Tooltip (hanya muncul di mobile) -->
+        <span class="absolute left-full ml-3 px-2 py-1 rounded-md bg-gray-800 text-white text-xs opacity-0 
+                     group-hover:opacity-100 whitespace-nowrap transition duration-200
+                     pointer-events-none lg:hidden">
+          {{ $item['name'] }}
+        </span>
+      </a>
+    @endforeach
+  </nav>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 bg-gray-50 p-3">
+    <div class="flex items-center justify-between lg:justify-between">
+
+      <!-- User Info -->
+      <div class="flex items-center gap-2">
+        <div id="userInitial"
+             class="flex items-center justify-center size-10 rounded-full bg-gray-800 text-white text-sm font-semibold">
+          U
         </div>
+        <div class="hidden lg:block">
+          <span id="userName" class="block font-medium">User</span>
+          <span id="userRole" class="block text-xs text-gray-500">Role</span>
+        </div>
+      </div>
 
-        <!-- Navigasi -->
-        <nav class="flex flex-col px-0 mt-4">
-            <a href="{{ route('dashboard') }}"
-                class="nav-link flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-                <iconify-icon icon="mdi:home-outline" width="22" height="22" class="flex-shrink-0"></iconify-icon>
-                <span class="sidebar-text hidden leading-none">Dashboard</span>
-            </a>
-
-            <a href="{{ route('administrator') }}"
-                class="nav-link flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-                <iconify-icon icon="mdi:account-circle-outline" width="22" height="22"></iconify-icon>
-                <span class="sidebar-text hidden leading-none">Administrator</span>
-            </a>
-
-            <a href="{{ route('service') }}"
-                class="nav-link flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-                <iconify-icon icon="mdi:cog-outline" width="22" height="22"></iconify-icon>
-                <span class="sidebar-text hidden leading-none">Layanan</span>
-            </a>
-
-            <a href="{{ route('customer') }}"
-                class="nav-link flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-                <iconify-icon icon="mdi:account-group-outline" width="22" height="22"></iconify-icon>
-                <span class="sidebar-text hidden leading-none">Pelanggan</span>
-            </a>
-
-            <a href="{{ route('order') }}"
-                class="nav-link flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-                <iconify-icon icon="mdi:cart-outline" width="22" height="22"></iconify-icon>
-                <span class="sidebar-text hidden leading-none">Transaksi</span>
-            </a>
-
-            <a href="{{ route('chat') }}"
-                class="nav-link flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-                <iconify-icon icon="mdi:message-outline" width="22" height="22"></iconify-icon>
-                <span class="sidebar-text hidden leading-none">Chat</span>
-            </a>
-
-            <a href="{{ route('report') }}"
-                class="nav-link flex items-center gap-3 text-gray-700 hover:text-black font-medium text-base h-10 px-4 rounded-md">
-                <iconify-icon icon="mdi:file-chart-outline" width="22" height="22"></iconify-icon>
-                <span class="sidebar-text hidden leading-none">Laporan</span>
-            </a>
-        </nav>
+      <!-- Logout Button Desktop -->
+      <button id="logoutBtn"
+              class="hidden lg:flex items-center gap-1 text-red-600 hover:bg-red-50 rounded-md px-3 py-2 text-sm font-medium transition">
+        <iconify-icon icon="mdi:logout" width="18" height="18"></iconify-icon>
+        Keluar
+      </button>
     </div>
 
-    <!-- Bagian bawah: User & Logout -->
-    <div class="p-2 border-t border-gray-100">
-        <div id="sidebarFooter"
-            class="flex items-center justify-between bg-black text-white rounded-lg px-4 py-2 h-14 transition-all duration-300">
-            <div id="userProfile" class="flex items-center gap-3">
-                <iconify-icon icon="mdi:account-circle-outline" width="30" height="30" class="text-white"></iconify-icon>
-                <div class="leading-tight sidebar-text">
-                    <span id="userName" class="block text-base font-medium leading-none">User</span>
-                    <span id="userRole" class="block text-sm text-gray-400 leading-none">Role</span>
-                </div>
-            </div>
+    <!-- Logout Button Mobile -->
+    <button id="logoutBtnMobile"
+            class="block lg:hidden mt-3 w-full text-red-600 hover:bg-red-50 rounded-md px-2.5 py-1 text-sm font-medium transition text-center">
+      <iconify-icon icon="mdi:logout" width="18" height="18"></iconify-icon>
+      Keluar
+    </button>
+  </footer>
 
-            <button id="logoutBtn" class="text-white hover:text-gray-300 transition" title="Logout">
-                <iconify-icon icon="mdi:logout" width="22" height="22" class="transform rotate-180"></iconify-icon>
-            </button>
-        </div>
-    </div>
 </div>
 
 @vite('resources/js/components/sidebar.js')

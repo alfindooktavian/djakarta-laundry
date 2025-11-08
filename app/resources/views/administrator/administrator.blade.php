@@ -218,11 +218,10 @@ async function handleCreateUser() {
 }
 
 async function handleDeleteUser(id) {
-    if (confirm('Yakin ingin menghapus user ini?')) {
-        const res = await deleteUser(id);
-        if (res) renderUsers();
-    }
+    const res = await deleteUser(id);
+    if (res && !res.cancelled) renderUsers();
 }
+
 
 async function handleDetailUser(id) {
     const user = await fetchUserById(id);

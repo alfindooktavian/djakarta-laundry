@@ -178,11 +178,10 @@ async function handleCreateService() {
 }
 
 async function handleDeleteService(id) {
-    if (confirm('Yakin ingin menghapus layanan ini?')) {
-        const res = await deleteService(id);
-        if (res) renderServices();
-    }
+    const res = await deleteService(id);
+    if (res && !res.cancelled) renderServices();
 }
+
 
 async function handleDetailService(id) {
     const service = await fetchServiceById(id);

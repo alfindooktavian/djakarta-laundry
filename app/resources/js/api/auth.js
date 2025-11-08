@@ -1,56 +1,53 @@
-// resources/js/api/auth.js
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL}`;
-
-// Login user
 export async function loginUser(email, password) {
-    try {
-        const res = await fetch(`${API_BASE}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-        const data = await res.json();
+    const data = await res.json();
 
-        if (!res.ok) {
-            throw new Error(data.message || 'Login gagal');
-        }
-
-        // Simpan token dan data user ke localStorage
-        localStorage.setItem('api_token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        return data;
-    } catch (err) {
-        console.error('Error loginUser:', err);
-        return { error: err.message };
+    if (!res.ok) {
+      throw new Error(data.message || "Login gagal, periksa kembali kredensial Anda.");
     }
+
+    if (data.token && data.user) {
+      localStorage.setItem("api_token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Error loginUser:", err);
+    return { error: err.message };
+  }
 }
 
-// Logout user
 export async function logoutUser() {
-    const token = localStorage.getItem('api_token');
+  const token = localStorage.getItem("api_token");
 
-    try {
-        if (token) {
-            await fetch(`${API_BASE}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-        }
-    } catch (err) {
-        console.error('Error logoutUser:', err);
-    } finally {
-        // Selalu hapus data localStorage meski request gagal
-        localStorage.removeItem('api_token');
-        localStorage.removeItem('user');
+  try {
+    if (token) {
+      const res = await fetch(`${API_BASE}/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+      return res.ok ? data : { error: data.message || "Logout gagal" };
     }
+  } catch (err) {
+    console.error("Error logoutUser:", err);
+    return { error: "Terjadi kesalahan saat logout." };
+  }
 
-    return { message: 'Logout berhasil' };
+  return { message: "Logout berhasil" };
 }
 
 window.loginUser = loginUser;

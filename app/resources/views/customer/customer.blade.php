@@ -193,10 +193,8 @@ async function handleCreateCustomer() {
 }
 
 async function handleDeleteCustomer(id) {
-    if (confirm('Yakin ingin menghapus pelanggan ini?')) {
-        const res = await deleteCustomer(id);
-        if (res) renderCustomers();
-    }
+    const res = await deleteCustomer(id);
+    if (res && !res.cancelled) renderCustomers();
 }
 
 async function handleDetailCustomer(id) {

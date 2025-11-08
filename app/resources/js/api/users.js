@@ -1,129 +1,193 @@
-// resources/js/api/users.js
+import Swal from "sweetalert2";
 
 const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/users`;
 
 export async function fetchUsers(page = 1, all = false) {
-    try {
-        const token = localStorage.getItem('api_token');
-        const url = all ? `${API_BASE}?all=true` : `${API_BASE}?page=${page}`;
+  try {
+    const token = localStorage.getItem("api_token");
+    const url = all ? `${API_BASE}?all=true` : `${API_BASE}?page=${page}`;
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-        const res = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
+    if (!res.ok) throw new Error("Gagal mengambil data pengguna");
 
-        if (!res.ok) throw new Error('Gagal mengambil data users');
-
-        const data = await res.json();
-        return all
-            ? data
-            : {
-                  users: data.data,
-                  current_page: data.current_page,
-                  last_page: data.last_page,
-                  total: data.total,
-                  per_page: data.per_page,
-              };
-    } catch (err) {
-        console.error('Error fetchUsers:', err);
-        return all
-            ? []
-            : {
-                  users: [],
-                  current_page: 1,
-                  last_page: 1,
-                  total: 0,
-                  per_page: 5,
-              };
-    }
+    const data = await res.json();
+    return all
+      ? data
+      : {
+          users: data.data,
+          current_page: data.current_page,
+          last_page: data.last_page,
+          total: data.total,
+          per_page: data.per_page,
+        };
+  } catch (err) {
+    console.error("Error fetchUsers:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Gagal Memuat Data",
+      text: "Tidak dapat mengambil daftar pengguna. Silakan coba lagi nanti.",
+    });
+    return all
+      ? []
+      : {
+          users: [],
+          current_page: 1,
+          last_page: 1,
+          total: 0,
+          per_page: 5,
+        };
+  }
 }
 
 export async function fetchUserById(id) {
-    try {
-        const token = localStorage.getItem('api_token');
-        const res = await fetch(`${API_BASE}/${id}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
+  try {
+    const token = localStorage.getItem("api_token");
+    const res = await fetch(`${API_BASE}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-        if (!res.ok) throw new Error('User tidak ditemukan');
-        return await res.json();
-    } catch (err) {
-        console.error('Error fetchUserById:', err);
-        return null;
-    }
+    if (!res.ok) throw new Error("Pengguna tidak ditemukan");
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetchUserById:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Pengguna Tidak Ditemukan",
+      text: "Data pengguna tidak tersedia atau sudah dihapus.",
+    });
+    return null;
+  }
 }
 
 export async function createUser(data) {
-    try {
-        const token = localStorage.getItem('api_token');
-        const res = await fetch(API_BASE, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify(data),
-        });
+  const token = localStorage.getItem("api_token");
+  try {
+    Swal.fire({
+      title: "Menyimpan...",
+      text: "Mohon tunggu sebentar.",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-        if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || 'Gagal membuat user');
-        }
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
 
-        return await res.json();
-    } catch (err) {
-        console.error('Error createUser:', err);
-        return null;
-    }
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || "Gagal membuat pengguna");
+
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      text: "Pengguna baru berhasil ditambahkan.",
+      showConfirmButton: false,
+      timer: 1500,
+    });
+
+    return result;
+  } catch (err) {
+    console.error("Error createUser:", err);
+    Swal.fire("Error", err.message || "Gagal menambahkan pengguna", "error");
+    return null;
+  }
 }
 
 export async function updateUser(id, data) {
-    try {
-        const token = localStorage.getItem('api_token');
-        const res = await fetch(`${API_BASE}/${id}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify(data),
-        });
+  const token = localStorage.getItem("api_token");
+  try {
+    Swal.fire({
+      title: "Memperbarui...",
+      text: "Mohon tunggu sebentar.",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-        if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || 'Gagal mengupdate user');
-        }
+    const res = await fetch(`${API_BASE}/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
 
-        return await res.json();
-    } catch (err) {
-        console.error('Error updateUser:', err);
-        return null;
-    }
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || "Gagal memperbarui pengguna");
+
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      text: "Data pengguna berhasil diperbarui.",
+      showConfirmButton: false,
+      timer: 1500,
+    });
+
+    return result;
+  } catch (err) {
+    console.error("Error updateUser:", err);
+    Swal.fire("Error", err.message || "Gagal memperbarui pengguna", "error");
+    return null;
+  }
 }
 
 export async function deleteUser(id) {
-    try {
-        const token = localStorage.getItem('api_token');
-        const res = await fetch(`${API_BASE}/${id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
-        });
+  const token = localStorage.getItem("api_token");
 
-        if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || 'Gagal menghapus user');
-        }
+  const result = await Swal.fire({
+    title: "Yakin ingin menghapus pengguna ini?",
+    text: "Tindakan ini tidak dapat dibatalkan.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#2563eb",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Ya, hapus",
+    cancelButtonText: "Batal",
+  });
 
-        return await res.json();
-    } catch (err) {
-        console.error('Error deleteUser:', err);
-        return null;
-    }
+  if (!result.isConfirmed) return { cancelled: true };
+
+  try {
+    Swal.fire({
+      title: "Menghapus...",
+      text: "Mohon tunggu sebentar.",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    const res = await fetch(`${API_BASE}/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Gagal menghapus pengguna");
+
+    Swal.fire({
+      icon: "success",
+      title: "Pengguna Berhasil Dihapus",
+      showConfirmButton: false,
+      timer: 1500,
+    });
+
+    return data;
+  } catch (err) {
+    console.error("Error deleteUser:", err);
+    Swal.fire("Error", err.message || "Gagal menghapus pengguna", "error");
+    return null;
+  }
 }
 
 window.fetchUsers = fetchUsers;

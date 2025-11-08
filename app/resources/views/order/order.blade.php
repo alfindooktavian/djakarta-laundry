@@ -1,71 +1,91 @@
 @extends('layouts.app')
 
-@section('title', 'Orders')
+@section('title', 'Manajemen Order')
 
 @section('content')
-<div class="space-y-6">
-    <x-title title="Order" />
-    <x-add-button onclick="openModal('tambahOrderModal')">Tambah</x-add-button>
+<div class="container mx-auto py-6 space-y-6">
 
-    <div class="bg-white shadow overflow-x-auto">
-        <table class="min-w-full border-y border-gray-200 rounded-lg">
-            <thead class="bg-gray-100">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h3 class="text-2xl font-semibold text-gray-800">Manajemen Order</h3>
+            <p class="text-gray-500 text-sm">Kelola pesanan pelanggan, status, dan pembayaran.</p>
+        </div>
+
+        <button onclick="openModal('tambahOrderModal')"
+            class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Order
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+        <table class="min-w-full text-sm text-gray-700">
+            <thead class="bg-gray-100 border-b border-gray-200">
                 <tr>
-                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">No</th>
-                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">Pelanggan</th>
-                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">User</th>
-                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">Tanggal Order</th>
-                    <th class="px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b">Status</th>
-                    <th class="px-4 py-4 text-right text-sm font-semibold text-gray-700 border-b">Total Harga</th>
-                    <th class="px-4 py-4 text-center text-sm font-semibold text-gray-700 border-b">Aksi</th>
+                    <th class="px-4 py-3 text-left font-semibold">No</th>
+                    <th class="px-4 py-3 text-left font-semibold">Pelanggan</th>
+                    <th class="px-4 py-3 text-left font-semibold">User</th>
+                    <th class="px-4 py-3 text-left font-semibold">Tanggal Order</th>
+                    <th class="px-4 py-3 text-left font-semibold">Status</th>
+                    <th class="px-4 py-3 text-right font-semibold">Total Harga</th>
+                    <th class="px-4 py-3 text-center font-semibold">Aksi</th>
                 </tr>
             </thead>
             <tbody id="orderTableBody">
                 <tr>
-                    <td colspan="7" class="text-center py-4 text-gray-500">Memuat data...</td>
+                    <td colspan="7" class="text-center py-6 text-gray-500">Memuat data...</td>
                 </tr>
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination -->
+    <div id="paginationContainer" class="flex justify-end gap-2"></div>
 </div>
-<div id="paginationContainer" class="flex justify-end gap-2 mt-4"></div>
+
 <!-- Modal Tambah Order -->
 <x-modal id="tambahOrderModal" title="Tambah Order">
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-3">
+
         <!-- Customer Baru -->
-        <button type="button" onclick="showNewCustomerForm()" 
-            class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm mb-2">
+        <button type="button" onclick="showNewCustomerForm()"
+            class="px-3 py-2 bg-gray-100 border rounded hover:bg-gray-200 transition text-sm">
             + Customer Baru
         </button>
 
         <div id="newCustomerContainer" class="flex flex-col gap-2 mb-2 hidden">
-            <input id="inputName" type="text" class="border rounded px-3 py-2 w-full" placeholder="Nama Customer" />
-            <input id="inputPhone" type="text" class="border rounded px-3 py-2 w-full" placeholder="No. Telepon" />
-            <input id="inputAddress" type="text" class="border rounded px-3 py-2 w-full" placeholder="Alamat" />
-            <button type="button" onclick="handleCreateCustomerFromOrder()" 
-                class="px-3 py-2 bg-black text-white rounded hover:bg-gray-800 transition text-sm">
+            <input id="inputName" type="text" class="border rounded-lg px-3 py-2 w-full"
+                placeholder="Nama Customer" />
+            <input id="inputPhone" type="text" class="border rounded-lg px-3 py-2 w-full"
+                placeholder="No. Telepon" />
+            <input id="inputAddress" type="text" class="border rounded-lg px-3 py-2 w-full"
+                placeholder="Alamat" />
+            <button type="button" onclick="handleCreateCustomerFromOrder()"
+                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
                 Simpan Customer
             </button>
         </div>
 
         <!-- Pilih Customer -->
         <div>
-            <label class="text-gray-700">Pilih Customer</label>
-            <select id="inputCustomerId" class="border rounded px-3 py-2 w-full">
+            <label class="text-gray-700 font-medium">Pilih Customer</label>
+            <select id="inputCustomerId"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
                 <option value="">Memuat data...</option>
             </select>
         </div>
 
-        <!-- Tanggal Order -->
-        <!-- <div>
-            <label class="text-gray-700">Tanggal Order</label>
-            <input id="inputOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
-        </div> -->
-
         <!-- Status -->
         <div>
-            <label class="text-gray-700">Status</label>
-            <select id="inputStatus" class="border rounded px-3 py-2 w-full">
+            <label class="text-gray-700 font-medium">Status</label>
+            <select id="inputStatus"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
                 <option value="">Pilih Status</option>
                 <option value="diterima">Diterima</option>
                 <option value="diproses">Diproses</option>
@@ -76,46 +96,49 @@
 
         <!-- Detail Order -->
         <div class="border-t pt-4 mt-4">
-            <h3 class="text-lg font-semibold mb-2">Detail Order</h3>
+            <h3 class="text-lg font-semibold mb-2 text-gray-800">Detail Order</h3>
             <div id="orderDetailsContainer" class="flex flex-col gap-3"></div>
-            <button type="button" onclick="addOrderDetailRow()" 
-                class="mt-2 px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm">
+            <button type="button" onclick="addOrderDetailRow()"
+                class="mt-2 px-3 py-2 bg-gray-100 border rounded hover:bg-gray-200 transition text-sm">
                 + Tambah Layanan
             </button>
         </div>
     </div>
 
     <x-slot name="footer">
-        <button onclick="closeModal('tambahOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
-        <button onclick="handleCreateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+        <button onclick="closeModal('tambahOrderModal')"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+            Batal
+        </button>
+        <button onclick="handleCreateOrder()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            Simpan
+        </button>
     </x-slot>
 </x-modal>
-
 
 <!-- Modal Edit Order -->
 <x-modal id="detailOrderModal" title="Edit Order">
     <div class="flex flex-col gap-3">
-        {{-- === Info Customer === --}}
         <div>
-            <label class="text-gray-700">Pilih Customer</label>
-            <select id="detailCustomerId" class="border rounded px-3 py-2 w-full">
+            <label class="text-gray-700 font-medium">Pilih Customer</label>
+            <select id="detailCustomerId"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
                 <option value="">Pilih Customer...</option>
             </select>
-
-            {{-- Info tambahan customer (otomatis tampil setelah dipilih) --}}
             <div id="customerInfoContainer" class="mt-2 text-sm text-gray-600"></div>
         </div>
 
-        {{-- === Tanggal Order === --}}
         <div>
-            <label class="text-gray-700">Tanggal Order</label>
-            <input id="detailOrderAt" type="date" class="border rounded px-3 py-2 w-full" />
+            <label class="text-gray-700 font-medium">Tanggal Order</label>
+            <input id="detailOrderAt" type="date"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400" />
         </div>
 
-        {{-- === Status === --}}
         <div>
-            <label class="text-gray-700">Status</label>
-            <select id="detailStatus" class="border rounded px-3 py-2 w-full">
+            <label class="text-gray-700 font-medium">Status</label>
+            <select id="detailStatus"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
                 <option value="diterima">Diterima</option>
                 <option value="diproses">Diproses</option>
                 <option value="selesai">Selesai</option>
@@ -123,27 +146,29 @@
             </select>
         </div>
 
-        {{-- === Total Harga === --}}
         <div>
-            <label class="text-gray-700">Total Harga</label>
-            <input id="detailTotalPrice" type="number" class="border rounded px-3 py-2 w-full bg-gray-100" readonly />
+            <label class="text-gray-700 font-medium">Total Harga</label>
+            <input id="detailTotalPrice" type="number"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full bg-gray-100" readonly />
         </div>
-        {{-- === Detail Order === --}}
-    <div class="border-t pt-4 mt-4">
-        <h3 class="text-lg font-semibold mb-2">Detail Order</h3>
-        <div id="editOrderDetailsContainer" class="flex flex-col gap-3"></div>
-        <button type="button" onclick="addEditOrderDetailRow()" 
-            class="mt-2 px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition text-sm">
-            + Tambah Layanan
-        </button>
-    </div>
+
+        <div class="border-t pt-4 mt-4">
+            <h3 class="text-lg font-semibold mb-2 text-gray-800">Detail Order</h3>
+            <div id="editOrderDetailsContainer" class="flex flex-col gap-3"></div>
+            <button type="button" onclick="addEditOrderDetailRow()"
+                class="mt-2 px-3 py-2 bg-gray-100 border rounded hover:bg-gray-200 transition text-sm">
+                + Tambah Layanan
+            </button>
+        </div>
     </div>
 
     <x-slot name="footer">
-        <button onclick="closeModal('detailOrderModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+        <button onclick="closeModal('detailOrderModal')"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
             Tutup
         </button>
-        <button onclick="handleUpdateOrder()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">
+        <button onclick="handleUpdateOrder()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             Simpan
         </button>
     </x-slot>
@@ -153,15 +178,17 @@
 <x-modal id="paymentModal" title="Pembayaran">
     <div class="flex flex-col gap-3">
         <input type="hidden" id="paymentOrderId" />
-        
+
         <div>
-            <label class="text-gray-700">Total Harga</label>
-            <input id="paymentTotal" type="number" class="border rounded px-3 py-2 w-full bg-gray-100" readonly />
+            <label class="text-gray-700 font-medium">Total Harga</label>
+            <input id="paymentTotal" type="number"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full bg-gray-100" readonly />
         </div>
 
         <div>
-            <label class="text-gray-700">Metode Pembayaran</label>
-            <select id="paymentMethod" class="border rounded px-3 py-2 w-full">
+            <label class="text-gray-700 font-medium">Metode Pembayaran</label>
+            <select id="paymentMethod"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
                 <option value="cash">Cash</option>
                 <option value="transfer">Transfer</option>
                 <option value="ewallet">E-Wallet</option>
@@ -169,8 +196,9 @@
         </div>
 
         <div>
-            <label class="text-gray-700">Status</label>
-            <select id="paymentStatus" class="border rounded px-3 py-2 w-full">
+            <label class="text-gray-700 font-medium">Status</label>
+            <select id="paymentStatus"
+                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
                 <option value="unpaid">Belum Dibayar</option>
                 <option value="paid">Sudah Dibayar</option>
             </select>
@@ -178,21 +206,25 @@
     </div>
 
     <x-slot name="footer">
-        <button onclick="closeModal('paymentModal')" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
-        <button onclick="handleUpdatePayment()" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Simpan</button>
+        <button onclick="closeModal('paymentModal')"
+            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+            Tutup
+        </button>
+        <button onclick="handleUpdatePayment()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            Simpan
+        </button>
     </x-slot>
 </x-modal>
-
-
-
 
 @vite([
     'resources/js/api/orders.js',
     'resources/js/api/customers.js',
     'resources/js/api/order-details.js',
     'resources/js/api/services.js',
-    'resources/js/api/payments.js' 
+    'resources/js/api/payments.js'
 ])
+
 
 <script>
 let currentEditOrderId = null;
@@ -582,25 +614,6 @@ function removeEditOrderDetailRow(index) {
     row.remove();
     updateEditTotalPrice();
 }
-
-
-// // ===== Load dropdown layanan untuk EDIT =====
-// // ===== Load dropdown layanan untuk EDIT =====
-// async function loadEditServiceDropdown(selectId, selectedId = null) {
-//     const services = await fetchServices();
-//     const select = document.getElementById(selectId);
-//     select.innerHTML = '<option value="">Pilih Service</option>' +
-//         services.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`).join('');
-
-//     if (selectedId) select.value = selectedId;
-
-//     const index = selectId.split('_')[1];
-//     select.addEventListener('change', () => updateEditSubtotal(selectId));
-//     document.getElementById(`editQuantity_${index}`).addEventListener('input', () => updateEditSubtotal(selectId));
-
-//     updateEditSubtotal(selectId);
-// }
-
 
 // Update subtotal berdasarkan index (angka)
 function updateEditSubtotal(index) {
