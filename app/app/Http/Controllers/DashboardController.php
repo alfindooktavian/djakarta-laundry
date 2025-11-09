@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $totalCustomers = Customer::count();
         $totalServices = Service::count();
         $totalOrders = Order::count();
-        $activeOrders = Order::where('status', 'diproses')->count();
+        $activeOrders = Order::where('status','diterima','diproses')->count();
         $completedOrders = Order::where('status', 'selesai')->count();
 
         // Income per bulan
