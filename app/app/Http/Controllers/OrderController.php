@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCompleted;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Events\OrderCreated;
@@ -84,7 +85,6 @@ class OrderController extends Controller
         ], 201);
     }
 
-    // ✅ Update order + detail
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -100,26 +100,23 @@ class OrderController extends Controller
         ]);
 
         $order = Order::with('orderDetails')->findOrFail($id);
+        $originalStatus = $order->status;
 
-        // Update data utama
         $order->update([
             'customer_id' => $validated['customer_id'] ?? $order->customer_id,
             'order_at'    => $validated['order_at'] ?? $order->order_at,
             'status'      => $validated['status'] ?? $order->status,
         ]);
 
-        // Update / Tambah detail
         if (!empty($validated['details'])) {
             foreach ($validated['details'] as $detail) {
                 if (isset($detail['id'])) {
-                    // Update detail lama
                     $order->orderDetails()->where('id', $detail['id'])->update([
                         'service_id' => $detail['service_id'],
                         'quantity'   => $detail['quantity'],
                         'subtotal'   => $detail['subtotal'],
                     ]);
                 } else {
-                    // Tambah detail baru
                     $order->orderDetails()->create([
                         'service_id' => $detail['service_id'],
                         'quantity'   => $detail['quantity'],
@@ -129,19 +126,24 @@ class OrderController extends Controller
             }
         }
 
-        // Hapus detail jika ada
         if (!empty($validated['deleted_details'])) {
             $order->orderDetails()->whereIn('id', $validated['deleted_details'])->delete();
         }
 
-        // ✅ Hitung ulang total harga & update payment
         $totalPrice = $order->orderDetails()->sum('subtotal');
         $order->update(['total_price' => $totalPrice]);
 
-        // Update amount di payment jika ada
         $payment = Payment::where('order_id', $order->id)->first();
         if ($payment) {
             $payment->update(['amount' => $totalPrice]);
+        }
+
+        if ($originalStatus !== 'selesai' && ($order->status === 'selesai')) {
+            try {
+                event(new OrderCompleted($order));
+            } catch (\Throwable $e) {
+                // ignore
+            }
         }
 
         return response()->json([
