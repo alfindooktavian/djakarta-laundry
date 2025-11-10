@@ -62,11 +62,11 @@
         `;
     }
 
-    document.getElementById("logoutBtn")?.addEventListener("click", () => {
-        localStorage.removeItem("api_token");
-        localStorage.removeItem("user");
-        window.location.href = "/login";
-    });
+    // document.getElementById("logoutBtn")?.addEventListener("click", () => {
+    //     localStorage.removeItem("api_token");
+    //     localStorage.removeItem("user");
+    //     window.location.href = "/login";
+    // });
 
     document.addEventListener("DOMContentLoaded", async () => {
         const data = await fetchDashboard();
