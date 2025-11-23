@@ -50,54 +50,61 @@
 </div>
 
 <!-- Modal Tambah Order -->
-<x-modal id="tambahOrderModal" title="Tambah Order">
-    <div class="flex flex-col gap-3">
+<x-modal id="tambahOrderModal" title="Tambah Order" maxWidth="max-w-4xl">
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6">
 
-        <!-- Customer Baru -->
-        <button type="button" onclick="showNewCustomerForm()"
-            class="px-3 py-2 bg-gray-100 border rounded hover:bg-gray-200 transition text-sm">
-            + Customer Baru
-        </button>
+        <!-- KIRI: Form Utama -->
+        <div class="flex flex-col gap-3">
 
-        <div id="newCustomerContainer" class="flex flex-col gap-2 mb-2 hidden">
-            <input id="inputName" type="text" class="border rounded-lg px-3 py-2 w-full"
-                placeholder="Nama Customer" />
-            <input id="inputPhone" type="text" class="border rounded-lg px-3 py-2 w-full"
-                placeholder="No. Telepon" />
-            <input id="inputAddress" type="text" class="border rounded-lg px-3 py-2 w-full"
-                placeholder="Alamat" />
-            <button type="button" onclick="handleCreateCustomerFromOrder()"
-                class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                Simpan Customer
+            <!-- Customer Baru -->
+            <button type="button" onclick="showNewCustomerForm()"
+                class="px-3 py-2 bg-gray-100 border rounded hover:bg-gray-200 transition text-sm">
+                + Customer Baru
             </button>
+
+            <div id="newCustomerContainer" class="flex flex-col gap-2 mb-2 hidden">
+                <input id="inputName" type="text" class="border rounded-lg px-3 py-2 w-full"
+                    placeholder="Nama Customer" />
+                <input id="inputPhone" type="text" class="border rounded-lg px-3 py-2 w-full"
+                    placeholder="No. Telepon" />
+                <input id="inputAddress" type="text" class="border rounded-lg px-3 py-2 w-full"
+                    placeholder="Alamat" />
+                <button type="button" onclick="handleCreateCustomerFromOrder()"
+                    class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                    Simpan Customer
+                </button>
+            </div>
+
+            <!-- Pilih Customer -->
+            <div>
+                <label class="text-gray-700 font-medium">Pilih Customer</label>
+                <select id="inputCustomerId"
+                    class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
+                    <option value="">Memuat data...</option>
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="text-gray-700 font-medium">Status</label>
+                <select id="inputStatus"
+                    class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
+                    <option value="">Pilih Status</option>
+                    <option value="diterima">Diterima</option>
+                    <option value="diproses">Diproses</option>
+                    <option value="selesai">Selesai</option>
+                    <option value="diambil">Diambil</option>
+                </select>
+            </div>
         </div>
 
-        <!-- Pilih Customer -->
-        <div>
-            <label class="text-gray-700 font-medium">Pilih Customer</label>
-            <select id="inputCustomerId"
-                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
-                <option value="">Memuat data...</option>
-            </select>
-        </div>
+        <!-- KANAN: Detail Order -->
+        <div class="flex flex-col gap-3 border-l border-gray-200 pl-4">
 
-        <!-- Status -->
-        <div>
-            <label class="text-gray-700 font-medium">Status</label>
-            <select id="inputStatus"
-                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
-                <option value="">Pilih Status</option>
-                <option value="diterima">Diterima</option>
-                <option value="diproses">Diproses</option>
-                <option value="selesai">Selesai</option>
-                <option value="diambil">Diambil</option>
-            </select>
-        </div>
-
-        <!-- Detail Order -->
-        <div class="border-t pt-4 mt-4">
             <h3 class="text-lg font-semibold mb-2 text-gray-800">Detail Order</h3>
+
             <div id="orderDetailsContainer" class="flex flex-col gap-3"></div>
+
             <button type="button" onclick="addOrderDetailRow()"
                 class="mt-2 px-3 py-2 bg-gray-100 border rounded hover:bg-gray-200 transition text-sm">
                 + Tambah Layanan
@@ -117,42 +124,47 @@
     </x-slot>
 </x-modal>
 
+
 <!-- Modal Edit Order -->
-<x-modal id="detailOrderModal" title="Edit Order">
-    <div class="flex flex-col gap-3">
-        <div>
-            <label class="text-gray-700 font-medium">Pilih Customer</label>
-            <select id="detailCustomerId"
-                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
-                <option value="">Pilih Customer...</option>
-            </select>
-            <div id="customerInfoContainer" class="mt-2 text-sm text-gray-600"></div>
+<x-modal id="detailOrderModal" title="Edit Order" maxWidth="max-w-4xl">
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6">
+        <!-- Kiri: Form Utama -->
+        <div class="flex flex-col gap-3">
+            <div>
+                <label class="text-gray-700 font-medium">Pilih Customer</label>
+                <select id="detailCustomerId"
+                    class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
+                    <option value="">Pilih Customer...</option>
+                </select>
+                <div id="customerInfoContainer" class="mt-2 text-sm text-gray-600"></div>
+            </div>
+
+            <div>
+                <label class="text-gray-700 font-medium">Tanggal Order</label>
+                <input id="detailOrderAt" type="date"
+                    class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400" />
+            </div>
+
+            <div>
+                <label class="text-gray-700 font-medium">Status</label>
+                <select id="detailStatus"
+                    class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
+                    <option value="diterima">Diterima</option>
+                    <option value="diproses">Diproses</option>
+                    <option value="selesai">Selesai</option>
+                    <option value="diambil">Diambil</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-gray-700 font-medium">Total Harga</label>
+                <input id="detailTotalPrice" type="number"
+                    class="border border-gray-300 rounded-lg px-3 py-2 w-full bg-gray-100" readonly />
+            </div>
         </div>
 
-        <div>
-            <label class="text-gray-700 font-medium">Tanggal Order</label>
-            <input id="detailOrderAt" type="date"
-                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400" />
-        </div>
-
-        <div>
-            <label class="text-gray-700 font-medium">Status</label>
-            <select id="detailStatus"
-                class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400">
-                <option value="diterima">Diterima</option>
-                <option value="diproses">Diproses</option>
-                <option value="selesai">Selesai</option>
-                <option value="diambil">Diambil</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="text-gray-700 font-medium">Total Harga</label>
-            <input id="detailTotalPrice" type="number"
-                class="border border-gray-300 rounded-lg px-3 py-2 w-full bg-gray-100" readonly />
-        </div>
-
-        <div class="border-t pt-4 mt-4">
+        <!-- Kanan: Detail Order -->
+        <div class="flex flex-col gap-3 border-l border-gray-200 pl-4">
             <h3 class="text-lg font-semibold mb-2 text-gray-800">Detail Order</h3>
             <div id="editOrderDetailsContainer" class="flex flex-col gap-3"></div>
             <button type="button" onclick="addEditOrderDetailRow()"
@@ -173,6 +185,7 @@
         </button>
     </x-slot>
 </x-modal>
+
 
 <!-- Modal Pembayaran -->
 <x-modal id="paymentModal" title="Pembayaran">
@@ -249,7 +262,10 @@ function addOrderDetailRow() {
         </select>
         <input id="detailQuantity_${orderDetailCount}" type="number" min="1" value="1" class="border rounded px-2 py-1 w-20 text-center" />
         <input id="detailSubtotal_${orderDetailCount}" type="number" min="0" placeholder="Subtotal" class="border rounded px-2 py-1 w-32 text-right" readonly />
-        <button type="button" onclick="removeOrderDetailRow(${orderDetailCount})" class="text-red-500 hover:text-red-700">Hapus</button>
+        <button type="button" onclick="removeOrderDetailRow(${orderDetailCount})"
+    class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-red-600 border hover:bg-red-700">
+    <iconify-icon icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
+</button>
     `;
     container.appendChild(row);
 
@@ -314,13 +330,13 @@ async function renderOrders(page = 1) {
 
     tbody.innerHTML = orders.map((order, index) => `
         <tr class="hover:bg-gray-50 transition">
-            <td class="px-4 py-4 border-b">${(current_page - 1) * 5 + index + 1}</td>
-            <td class="px-4 py-4 border-b">${order.customer?.name || '-'}</td>
-            <td class="px-4 py-4 border-b">${order.user?.name || '-'}</td>
-            <td class="px-4 py-4 border-b">${order.order_at}</td>
-            <td class="px-4 py-4 border-b">${order.status || '-'}</td>
-            <td class="px-4 py-4 border-b text-right">Rp ${order.total_price?.toLocaleString() || '0'}</td>
-            <td class="px-4 py-4 border-b text-center">
+            <td class="px-4 py-4 border-b border-gray-200">${(current_page - 1) * 5 + index + 1}</td>
+            <td class="px-4 py-4 border-b border-gray-200">${order.customer?.name || '-'}</td>
+            <td class="px-4 py-4 border-b border-gray-200">${order.user?.name || '-'}</td>
+            <td class="px-4 py-4 border-b border-gray-200">${order.order_at}</td>
+            <td class="px-4 py-4 border-b border-gray-200">${order.status || '-'}</td>
+            <td class="px-4 py-4 border-b border-gray-200 text-right">Rp ${order.total_price?.toLocaleString() || '0'}</td>
+            <td class="px-4 py-4 border-b border-gray-200 text-center">
                 <div class="flex justify-center items-center gap-4">
                     <button onclick="handlePayment(${order.id})" class="flex justify-center items-center rounded-lg text-white px-2 h-8 bg-gradient-to-r from-blue-500 to-blue-400 border shadow-md hover:shadow-xl transform hover:scale-110 transition-all duration-300">
                         <iconify-icon icon="mdi:credit-card-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
@@ -347,18 +363,18 @@ function renderPagination(currentPage, lastPage) {
     let html = '';
 
     // Previous
-    html += `<button onclick="gotoPage(${currentPage - 1})" class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">&lt;</button>`;
+    html += `<button onclick="gotoPage(${currentPage - 1})" class="px-3 py-1 border rounded hover:bg-grey-200 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">&lt;</button>`;
 
     let start = Math.max(currentPage - 1, 1);
     let end = Math.min(start + 2, lastPage);
     start = Math.max(end - 2, 1);
 
     for (let i = start; i <= end; i++) {
-        html += `<button onclick="gotoPage(${i})" class="px-3 py-1 border rounded ${i === currentPage ? 'bg-gray-800 text-white' : 'hover:bg-gray-200'}">${i}</button>`;
+        html += `<button onclick="gotoPage(${i})" class="px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-600 text-white' : 'hover:bg-grey-200'}">${i}</button>`;
     }
 
     // Next
-    html += `<button onclick="gotoPage(${currentPage + 1})" class="px-3 py-1 border rounded hover:bg-gray-200 ${currentPage === lastPage ? 'opacity-50 cursor-not-allowed' : ''}">&gt;</button>`;
+    html += `<button onclick="gotoPage(${currentPage + 1})" class="px-3 py-1 border rounded hover:bg-grey-200 ${currentPage === lastPage ? 'opacity-50 cursor-not-allowed' : ''}">&gt;</button>`;
 
     container.innerHTML = html;
 }
@@ -587,7 +603,10 @@ async function addEditOrderDetailRow(detail = null, services = null) {
         </select>
         <input id="editQuantity_${index}" type="number" min="1" value="${detail?.quantity ?? 1}" class="border rounded px-2 py-1 w-20 text-center" />
         <input id="editSubtotal_${index}" type="number" min="0" value="${detail?.subtotal ?? 0}" class="border rounded px-2 py-1 w-32 text-right" readonly />
-        <button type="button" onclick="removeEditOrderDetailRow(${index})" class="text-red-500 hover:text-red-700">Hapus</button>
+        <button type="button" onclick="removeEditOrderDetailRow(${index})"
+    class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-red-600 border hover:bg-red-700">
+    <iconify-icon icon="mdi:delete-outline" width="20" height="20" color="#FFFFFF"></iconify-icon>
+</button>
     `;
 
     container.appendChild(row);

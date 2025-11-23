@@ -1,10 +1,11 @@
 @props([
     'id' => 'modal',
     'title' => '',
+    'maxWidth' => 'max-w-lg',
 ])
 
 <div id="{{ $id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 relative flex flex-col transition-all duration-300 transform scale-95">
+    <div class="bg-white rounded-2xl shadow-xl w-full {{ $maxWidth }} mx-4 p-6 relative flex flex-col transition-all duration-300 transform scale-95">
         
         <!-- Tombol Tutup -->
         <button 
