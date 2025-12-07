@@ -505,14 +505,31 @@ async function handleDeleteOrder(id) {
         if(res) renderOrders();
     }
 }
+function populateCustomerDropdown(selectId, customers) {
+    const select = document.getElementById(selectId);
+    select.innerHTML = `<option value="">Pilih Customer...</option>`;
+
+    // Pastikan customers adalah array
+    const list = Array.isArray(customers) ? customers : customers.data || [];
+
+    list.forEach(c => {
+        const option = document.createElement("option");
+        option.value = c.id;
+        option.textContent = c.name;
+        select.appendChild(option);
+    });
+}
+
 
 // ===== Edit Order =====
 async function handleDetailOrder(id) {
     const order = await fetchOrderById(id);
+    const customers = await fetchCustomers(1, true)
     if (!order) return alert('Order tidak ditemukan');
 
     currentEditOrderId = id;
 
+    populateCustomerDropdown("detailCustomerId", customers);
     document.getElementById('detailCustomerId').value = order.customer_id;
     document.getElementById('detailOrderAt').value = order.order_at;
     document.getElementById('detailStatus').value = order.status || '';

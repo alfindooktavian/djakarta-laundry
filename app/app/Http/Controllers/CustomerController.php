@@ -12,7 +12,7 @@ class CustomerController extends Controller
     if ($request->boolean('all')) {
         $customers = Customer::orderBy('id', 'desc')->get();
     } else {
-        $customers = Customer::orderBy('id', 'desc')->paginate(5);
+        $customers = Customer::orderBy('id', 'desc')->paginate(10);
     }
 
     return response()->json($customers);

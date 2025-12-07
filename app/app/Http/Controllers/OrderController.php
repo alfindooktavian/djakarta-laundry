@@ -21,7 +21,7 @@ class OrderController extends Controller
     } else {
         $orders = Order::with(['customer', 'user', 'orderDetails.service', 'payments'])
             ->orderBy('id', 'desc')
-            ->paginate(5);
+            ->paginate(10);
     }
 
     return response()->json($orders);

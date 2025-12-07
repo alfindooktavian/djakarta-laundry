@@ -77,7 +77,7 @@ class UserController extends Controller
     if ($request->boolean('all')) {
         $users = User::orderBy('id', 'desc')->get();
     } else {
-        $users = User::orderBy('id', 'desc')->paginate(5);
+        $users = User::orderBy('id', 'desc')->paginate(10);
     }
 
     return response()->json($users);

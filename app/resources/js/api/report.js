@@ -2,25 +2,52 @@
 
 const API_BASE = `${import.meta.env.VITE_API_BASE_URL}/reports`;
 
-export async function fetchReports() {
+export async function fetchReports(page = 1, all = false) {
     try {
-        const token = localStorage.getItem('api_token');
-        const res = await fetch(API_BASE, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-            },
-        });
-
-        if (!res.ok) throw new Error(`Gagal mengambil data laporan (${res.status})`);
-
-        const result = await res.json();
-        return Array.isArray(result) ? result : result.data ?? [];
+      const token = localStorage.getItem("api_token");
+      const url = all ? `${API_BASE}?all=true` : `${API_BASE}?page=${page}`;
+  
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!res.ok) throw new Error("Gagal mengambil data laporan");
+  
+      const data = await res.json();
+  
+      return all
+        ? data
+        : {
+            reports: data.data,
+            current_page: data.current_page,
+            last_page: data.last_page,
+            total: data.total,
+            per_page: data.per_page,
+          };
     } catch (err) {
-        console.error('Error fetchReports:', err);
-        return [];
+      console.error("❌ Error fetchReports:", err);
+  
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Memuat Data",
+        text: "Tidak dapat mengambil laporan. Coba lagi nanti.",
+      });
+  
+      return all
+        ? []
+        : {
+            reports: [],
+            current_page: 1,
+            last_page: 1,
+            total: 0,
+            per_page: 10,
+          };
     }
-}
+  }
+  
 
 export async function downloadReport(type = 'pdf', params = '') {
     try {

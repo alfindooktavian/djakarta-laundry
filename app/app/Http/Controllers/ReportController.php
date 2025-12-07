@@ -14,14 +14,20 @@ class ReportController extends Controller
     /**
      * Ambil semua data laporan transaksi
      */
-    public function index()
-    {
+    public function index(Request $request)
+{
+    if ($request->boolean('all')) {
         $orders = Order::with(['customer', 'user'])
-            ->orderBy('order_at', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
-
-        return response()->json($orders);
+    } else {
+        $orders = Order::with(['customer', 'user'])
+            ->orderBy('id', 'desc')
+            ->paginate(10);
     }
+
+    return response()->json($orders);
+}
 
     /**
      * Export laporan ke PDF

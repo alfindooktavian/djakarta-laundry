@@ -42,6 +42,8 @@
             </tbody>
         </table>
     </div>
+    <div id="paginationContainer" class="flex justify-end gap-2 mt-4"></div>
+
 </div>
 
 <!-- Modal Download -->
@@ -129,11 +131,12 @@ function handleDownloadPDF() {
     closeModal('downloadReportModal');
 }
 
-async function renderReports() {
+async function renderReports(page = 1) {
     const tbody = document.getElementById('reportTableBody');
     tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500">Memuat data...</td></tr>`;
 
-    const reports = await fetchReports();
+    const { reports, current_page, last_page } = await fetchReports(page, false);
+    lastPage = last_page;
 
     if (!reports.length) {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500">Belum ada data transaksi.</td></tr>`;
@@ -142,22 +145,60 @@ async function renderReports() {
 
     tbody.innerHTML = reports.map((order, index) => `
         <tr class="hover:bg-blue-50 transition">
-            <td class="px-4 py-3 border-b border-gray-200">${index + 1}</td>
+            <td class="px-4 py-3 border-b border-gray-200">${(current_page - 1) * 5 + index + 1}</td>
             <td class="px-4 py-3 border-b border-gray-200">${order.customer?.name ?? '-'}</td>
             <td class="px-4 py-3 border-b border-gray-200">${order.user?.name ?? '-'}</td>
             <td class="px-4 py-3 border-b border-gray-200">
-                ${order.order_at ? new Date(order.order_at).toLocaleDateString('id-ID', {
-                    day: '2-digit', month: '2-digit', year: 'numeric'
-                }) : '-'}
+                ${order.order_at ? new Date(order.order_at).toLocaleDateString('id-ID') : '-'}
             </td>
             <td class="px-4 py-3 border-b border-gray-200">
-                <span class="px-2 py-1 text-xs rounded-full ${getStatusColor(order.status)}">${order.status ?? '-'}</span>
+                <span class="px-2 py-1 text-xs rounded-full ${getStatusColor(order.status)}">
+                    ${order.status ?? '-'}
+                </span>
             </td>
-            <td class="px-4 py-3 text-right border-b border-gray-200 font-semibold text-gray-800">
+            <td class="px-4 py-3 border-b border-gray-200 text-right font-semibold">
                 Rp ${Number(order.total_price ?? 0).toLocaleString('id-ID')}
             </td>
         </tr>
     `).join('');
+
+    renderPagination(current_page, last_page);
+}
+
+
+let lastPage = 1;
+
+function renderPagination(currentPage, lastPage) {
+    const container = document.getElementById('paginationContainer');
+    let html = '';
+
+    html += `<button onclick="gotoPage(${currentPage - 1})" 
+        class="px-3 py-1 border rounded hover:bg-gray-100 
+        ${currentPage == 1 ? 'opacity-50 cursor-not-allowed' : ''}"
+    >&lt;</button>`;
+
+    let start = Math.max(currentPage - 1, 1);
+    let end = Math.min(start + 2, lastPage);
+    start = Math.max(end - 2, 1);
+
+    for (let i = start; i <= end; i++) {
+        html += `<button onclick="gotoPage(${i})"
+            class="px-3 py-1 border rounded 
+            ${i == currentPage ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}"
+        >${i}</button>`;
+    }
+
+    html += `<button onclick="gotoPage(${currentPage + 1})" 
+        class="px-3 py-1 border rounded hover:bg-gray-100 
+        ${currentPage == lastPage ? 'opacity-50 cursor-not-allowed' : ''}"
+    >&gt;</button>`;
+
+    container.innerHTML = html;
+}
+
+function gotoPage(page) {
+    if (page < 1 || page > lastPage) return;
+    renderReports(page);
 }
 
 // Warna status

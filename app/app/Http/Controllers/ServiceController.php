@@ -13,7 +13,7 @@ class ServiceController extends Controller
     if ($request->boolean('all')) {
         $services = Service::orderBy('id', 'desc')->get();
     } else {
-        $services = Service::orderBy('id', 'desc')->paginate(5);
+        $services = Service::orderBy('id', 'desc')->paginate(10);
     }
 
     return response()->json($services);
