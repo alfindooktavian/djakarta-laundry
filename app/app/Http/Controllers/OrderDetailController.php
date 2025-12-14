@@ -27,7 +27,7 @@ class OrderDetailController extends Controller
         $validated = $request->validate([
             'order_id'   => 'required|exists:orders,id',
             'service_id' => 'required|exists:services,id',
-            'quantity'   => 'sometimes|integer|min:1', // default sudah 1 di migration
+            'quantity'   => 'sometimes|numeric|min:0.1',
             'subtotal'   => 'required|numeric|min:0',
         ]);
 
@@ -45,7 +45,7 @@ class OrderDetailController extends Controller
         $validated = $request->validate([
             'order_id'   => 'sometimes|required|exists:orders,id',
             'service_id' => 'sometimes|required|exists:services,id',
-            'quantity'   => 'sometimes|required|integer|min:1',
+            'quantity'   => 'sometimes|required|numeric|min:0.1',
             'subtotal'   => 'sometimes|required|numeric|min:0',
         ]);
 

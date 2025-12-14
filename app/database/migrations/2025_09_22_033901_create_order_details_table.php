@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignId('service_id')->constrained('services')->cascadeOnDelete();
-            $table->integer('quantity')->default(1);
+            $table->float('quantity')->default(0);
             $table->float('subtotal');
             $table->timestamps();
         });

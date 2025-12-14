@@ -45,7 +45,7 @@ class OrderController extends Controller
             'status'      => 'sometimes|in:diterima,diproses,selesai,diambil',
             'details'     => 'required|array|min:1',
             'details.*.service_id' => 'required|exists:services,id',
-            'details.*.quantity'   => 'required|integer|min:1',
+            'details.*.quantity' => 'required|numeric|min:0.1',
             'details.*.subtotal'   => 'required|numeric|min:0',
         ]);
 
@@ -94,7 +94,7 @@ class OrderController extends Controller
             'details'     => 'nullable|array',
             'details.*.id'         => 'nullable|exists:order_details,id',
             'details.*.service_id' => 'required_with:details|exists:services,id',
-            'details.*.quantity'   => 'required_with:details|integer|min:1',
+            'details.*.quantity' => 'required_with:details|numeric|min:0.1',
             'details.*.subtotal'   => 'required_with:details|numeric|min:0',
             'deleted_details'      => 'nullable|array',
         ]);

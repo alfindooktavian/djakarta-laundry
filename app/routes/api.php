@@ -14,6 +14,8 @@ use App\Http\Controllers\DashboardController;
 // Public routes
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/login', [UserController::class, 'login']);
+Route::post('/request-reset-password', [UserController::class, 'requestResetPassword']);
+Route::post('/reset-password', [UserController::class, 'resetPassword']);
 
 // Protected routes (Sanctum token)
 Route::middleware(['auth:sanctum'])->group(function () {

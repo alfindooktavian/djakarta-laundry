@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Service; // <— tambahkan ini untuk mengakses model Service
+use App\Http\Controllers\UserController;
 
 // Halaman utama (menampilkan services dari database)
 Route::get('/', function () {
@@ -54,3 +55,6 @@ Route::get('/report', function () {
 Route::get('/order', function () {
     return view('order.order');
 })->name('order');
+
+Route::post('/request-reset-password', [UserController::class, 'requestResetPassword']);
+Route::post('/reset-password', [UserController::class, 'resetPassword']);

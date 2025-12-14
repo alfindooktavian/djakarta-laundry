@@ -117,6 +117,7 @@
 @vite('resources/js/api/users.js')
 
 <script>
+const loggedInUserId = @json(auth()->id());
 let currentEditUserId = null;
 let lastPage = 1;
 
@@ -218,6 +219,11 @@ async function handleCreateUser() {
 }
 
 async function handleDeleteUser(id) {
+    // Cek jika user ingin menghapus diri sendiri
+    if (id === loggedInUserId) {
+        return alert('Tidak bisa menghapus akun yang sedang login!');
+    }
+
     const res = await deleteUser(id);
     if (res && !res.cancelled) renderUsers();
 }
@@ -248,6 +254,11 @@ async function handleUpdateUser() {
 
     const newPassword = document.getElementById('detailPassword').value;
     if (newPassword) data.password = newPassword;
+
+    // Cek jika user login ingin menonaktifkan diri sendiri
+    if (currentEditUserId === loggedInUserId && data.status === 'nonaktif') {
+        return alert('Tidak bisa menonaktifkan akun yang sedang login!');
+    }
 
     const res = await updateUser(currentEditUserId, data);
     if (res) {

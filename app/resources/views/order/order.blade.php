@@ -260,7 +260,7 @@ function addOrderDetailRow() {
         <select id="detailServiceId_${orderDetailCount}" class="border rounded px-2 py-1 w-1/2">
             <option value="">Pilih Service</option>
         </select>
-        <input id="detailQuantity_${orderDetailCount}" type="number" min="1" value="1" class="border rounded px-2 py-1 w-20 text-center" />
+        <input id="detailQuantity_${orderDetailCount}" type="number" step="0.1" min="0.1" value="1" class="border rounded px-2 py-1 w-20 text-center" />
         <input id="detailSubtotal_${orderDetailCount}" type="number" min="0" placeholder="Subtotal" class="border rounded px-2 py-1 w-32 text-right" readonly />
         <button type="button" onclick="removeOrderDetailRow(${orderDetailCount})"
     class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-red-600 border hover:bg-red-700">
@@ -296,21 +296,22 @@ async function loadServiceDropdown(selectId) {
 function updateSubtotal(selectId) {
     const index = selectId.split('_')[1];
     const serviceSelect = document.getElementById(selectId);
-    const quantity = parseInt(document.getElementById(`detailQuantity_${index}`).value || 0);
-    const price = parseInt(serviceSelect.selectedOptions[0]?.dataset.price || 0);
+    const quantity = parseFloat(document.getElementById(`detailQuantity_${index}`).value || 0);
+    const price = parseFloat(serviceSelect.selectedOptions[0]?.dataset.price || 0);
     const subtotal = price * quantity;
 
-    document.getElementById(`detailSubtotal_${index}`).value = subtotal;
+    document.getElementById(`detailSubtotal_${index}`).value = subtotal.toFixed(1); // 1 angka di belakang koma
 }
+
 
 // ===== Hitung total =====
 function calculateTotalPrice() {
     const subtotals = document.querySelectorAll('[id^="detailSubtotal_"]');
     let total = 0;
     subtotals.forEach(input => {
-        total += parseInt(input.value || 0);
+        total += parseFloat(input.value || 0);
     });
-    return total;
+    return total.toFixed(1);
 }
 
 // ===== Render semua order =====
@@ -412,8 +413,9 @@ async function handleCreateOrder() {
     for (let row of detailRows) {
         const index = row.dataset.index;
         const serviceId = document.getElementById(`detailServiceId_${index}`).value;
-        const quantity = parseInt(document.getElementById(`detailQuantity_${index}`).value);
-        const subtotal = parseInt(document.getElementById(`detailSubtotal_${index}`).value);
+        const quantity = parseFloat(document.getElementById(`detailQuantity_${index}`).value);
+        const subtotal = parseFloat(document.getElementById(`detailSubtotal_${index}`).value);
+
         if (!serviceId) continue;
 
         details.push({ service_id: serviceId, quantity, subtotal });
@@ -458,8 +460,9 @@ async function handleUpdateOrder() {
         const index = row.dataset.index;
         const detailId = row.dataset.id || null;
         const serviceId = document.getElementById(`editServiceId_${index}`).value;
-        const quantity = parseInt(document.getElementById(`editQuantity_${index}`).value);
-        const subtotal = parseInt(document.getElementById(`editSubtotal_${index}`).value);
+        const quantity = parseFloat(document.getElementById(`editQuantity_${index}`).value);
+        const subtotal = parseFloat(document.getElementById(`editSubtotal_${index}`).value);
+
         if (!serviceId) continue;
 
         details.push({
@@ -618,7 +621,7 @@ async function addEditOrderDetailRow(detail = null, services = null) {
             <option value="">Pilih Service</option>
             ${services.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`).join('')}
         </select>
-        <input id="editQuantity_${index}" type="number" min="1" value="${detail?.quantity ?? 1}" class="border rounded px-2 py-1 w-20 text-center" />
+        <input id="editQuantity_${index}" type="number" step="0.1" min="0.1" value="${detail?.quantity ?? 1}" class="border rounded px-2 py-1 w-20 text-center" />
         <input id="editSubtotal_${index}" type="number" min="0" value="${detail?.subtotal ?? 0}" class="border rounded px-2 py-1 w-32 text-right" readonly />
         <button type="button" onclick="removeEditOrderDetailRow(${index})"
     class="flex justify-center items-center rounded-lg text-white w-8 h-8 bg-red-600 border hover:bg-red-700">
@@ -657,18 +660,15 @@ function updateEditSubtotal(index) {
     const quantityInput = document.getElementById(`editQuantity_${index}`);
     const subtotalInput = document.getElementById(`editSubtotal_${index}`);
 
-    if (!serviceSelect || !quantityInput || !subtotalInput) return;
-
-    // safe parsing: fallback ke 0 bila undefined / tidak bisa di parse
-    const priceRaw = serviceSelect.selectedOptions[0]?.dataset?.price;
-    const price = Number.isFinite(Number(priceRaw)) ? parseInt(priceRaw, 10) : 0;
-    const quantity = Number.isFinite(Number(quantityInput.value)) ? parseInt(quantityInput.value, 10) : 0;
+    const price = parseFloat(serviceSelect.selectedOptions[0]?.dataset.price || 0);
+    const quantity = parseFloat(quantityInput.value || 0);
 
     const subtotal = price * quantity;
-    subtotalInput.value = subtotal;
+    subtotalInput.value = subtotal.toFixed(1); // 1 angka di belakang koma
 
     updateEditTotalPrice();
 }
+
 
 // Hitung total untuk container edit saja
 function updateEditTotalPrice() {
@@ -676,10 +676,9 @@ function updateEditTotalPrice() {
     const subtotals = container.querySelectorAll('[id^="editSubtotal_"]');
     let total = 0;
     subtotals.forEach(input => {
-        const v = parseInt(input.value || 0, 10);
-        total += Number.isFinite(v) ? v : 0;
+        total += parseFloat(input.value || 0);
     });
-    document.getElementById('detailTotalPrice').value = total;
+    document.getElementById('detailTotalPrice').value = total.toFixed(1);
 }
 
 async function handlePayment(orderId) {
