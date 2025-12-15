@@ -174,7 +174,7 @@
           Punya pertanyaan atau butuh bantuan?
           Tim kami siap membantu dengan cepat melalui WhatsApp!
         </p>
-        <a href="https://wa.me/6282125486595?text=Halo%20Djakarta%20Laundry!%20Saya%20ingin%20bertanya%20tentang%20layanan%20Anda."
+        <a href="https://wa.me/6281235536861?text=Halo%20Djakarta%20Laundry!%20Saya%20ingin%20bertanya%20tentang%20layanan%20Anda."
           target="_blank"
           class="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
           <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
